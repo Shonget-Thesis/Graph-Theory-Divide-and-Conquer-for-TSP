@@ -1,0 +1,69 @@
+\subsection{Step-by-Step Procedure}\label{sec:procedure}
+Algorithm~\ref{alg:dc} restates Algorithm~2.8 of~\cite{lunagarcia2024performance}.
+
+\begin{algorithm}[H]
+\caption{Divide and Conquer approach for TSP (Algorithm~2.8 of~\cite{lunagarcia2024performance})}\label{alg:dc}
+\begin{algorithmic}[1]
+\Require A set of cities with coordinates and pairwise distances
+\State Randomly shuffle the cities to introduce variation.
+\State Recursively split the cities into two subsets by their $x$ or $y$ coordinate (chosen randomly).
+\If{the subset has 1 city} \State return the city
+\ElsIf{the subset has 2 cities} \State return the edge connecting the two cities
+\EndIf
+\State Recursively solve the TSP for each subset.
+\State Merge the two solutions through the shortest connection (bridge) between the subsets.
+\State Adjust the merged solution so that no city is repeated.
+\Ensure The merged tour and its total distance
+\end{algorithmic}
+\end{algorithm}
+
+\paragraph{Step 1: Shuffle.} The input order is randomised. Our split sorts by coordinate, so the
+shuffle only affects how ties are broken. The randomness that matters is the choice of axis in Step~2.
+
+\paragraph{Step 2: Divide.} Pick the $x$ axis (longitude) or the $y$ axis (latitude) at random, sort the
+cities along it, and cut at the median. This gives two halves of sizes $\lfloor m/2\rfloor$ and
+$\lceil m/2\rceil$ whose points lie on opposite sides of a vertical or horizontal line.
+
+\paragraph{Step 3: Base cases.} A single city is a ``tour'' of length 0. Two cities $a,b$ form the tour
+$a \to b \to a$ of length $2w(a,b)$; the paper's code uses the same value.
+
+\paragraph{Step 4: Conquer.} Solve each half recursively, which returns a cycle $T_1$ for the first half
+and $T_2$ for the second.
+
+\paragraph{Steps 5--6: Combine (merge).} The two cycles must become \emph{one} cycle that still visits
+each city once. The paper's code (Appendix~4.8 of~\cite{lunagarcia2024performance}) concatenates
+\texttt{tour1[:-1] + [a, b] + tour2}, where $(a,b)$ is the shortest bridge. This does not give a valid
+tour, because $a$ and $b$ are already in \texttt{tour1} and \texttt{tour2}. We ran that listing unchanged
+on the paper's own 7-city example: it returned sequences of 13 entries that repeat cities and do not
+return to the start, and for some seeds the reported distance did not equal the length of the returned
+sequence. In other words, the step ``adjust the merged solution so no city is repeated'' is never
+actually carried out.
+
+We therefore implement the merge in the standard way for joining two cycles, which keeps the paper's
+``shortest bridge'' rule:
+
+\begin{algorithm}[H]
+\caption{Merge two cycles through the shortest bridge (our implementation of Steps 5--6)}\label{alg:merge}
+\begin{algorithmic}[1]
+\Require Cycles $T_1$ and $T_2$ on disjoint vertex sets $S_1$ and $S_2$; weights $w$
+\State $(a, b) \gets \arg\min_{u \in S_1,\, v \in S_2} w(u,v)$ \Comment{shortest bridge}
+\For{each edge $(a, a')$ of $T_1$ at $a$ and each edge $(b, b')$ of $T_2$ at $b$}
+  \State remove $(a,a')$ and $(b,b')$; add the bridge $(a,b)$ and the closing edge $(a',b')$
+  \State $\Delta \gets w(a,b) + w(a',b') - w(a,a') - w(b,b')$
+\EndFor
+\State keep the option with the smallest $\Delta$; the merged cycle has length $L(T_1)+L(T_2)+\Delta$
+\Ensure One cycle through $S_1 \cup S_2$ that visits each vertex exactly once
+\end{algorithmic}
+\end{algorithm}
+
+Removing one edge from each cycle leaves two paths; the bridge and the closing edge join their ends into
+one cycle, so every city appears exactly once. A 1-city tour has no edge to remove, so the city is simply
+inserted next to $b$. For a 2-city tour $a \to b \to a$, removing one copy of the doubled edge leaves the
+single edge $a$--$b$. Section~\ref{sec:apply} shows this procedure on our data.
+
+\begin{remark}
+We also implemented a variant, the \emph{best-splice} rule, that does not insist on using the shortest
+bridge: it tries every edge of $T_1$ against every edge of $T_2$ and keeps the smallest $\Delta$. It is
+still $O(n^2)$ per merge. Unless stated otherwise, all results use the paper-faithful shortest-bridge
+rule; the variant is compared in Section~\ref{sec:limitations}.
+\end{remark}

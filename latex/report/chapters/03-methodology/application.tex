@@ -1,0 +1,55 @@
+\subsection{Applying the Algorithm to the Graph}\label{sec:apply}
+We run Algorithm~\ref{alg:dc} on $G$ with the paper's shortest-bridge merge (Algorithm~\ref{alg:merge})
+and random seed \DCSeed{}. Fixing the seed makes the random choices, and so the result, reproducible.
+
+\paragraph{Divide.} Figure~\ref{fig:tree} shows the recursion. Each box is a subset of vertices together
+with the axis chosen to split it. The leaves are the base cases: one vertex (length 0), or two vertices
+$a\to b\to a$ (length $2w(a,b)$).
+
+\begin{figure}[H]
+\centering
+\resizebox{\textwidth}{!}{\input{../shared/generated/divide-tree}}
+\caption{Divide step for seed \DCSeed{}: recursive median splits by longitude ($x$) or latitude ($y$).
+Leaves show the base-case tours and their lengths in km.}\label{fig:tree}
+\end{figure}
+
+\paragraph{The same run on the map.} Figure~\ref{fig:steps} draws the recursion on the graph itself.
+Panel~(a) shows the median cuts, numbered by recursion level: the level-1 cut is the vertical line that
+splits the ten vertices into a western and an eastern half, and the level-2 and level-3 cuts split those
+halves again. Panel~(b) shows the base cases: pairs joined by an edge, and single vertices (V1, V4).
+Panels~(c)--(e) then undo the cuts from the deepest level up. At each level the sub-tours on the two
+sides of a cut are merged by deleting one edge from each (dashed red) and adding the shortest bridge
+and a closing edge (gold). After the level-1 merge a single Hamiltonian cycle remains, which is the
+final tour.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{steps.pdf}
+\caption{Divide and Conquer on the graph (seed \DCSeed{}). (a)~Divide lines; (b)~base-case
+sub-tours, one colour per sub-tour; (c)--(e)~merges from the deepest level to the top. Dashed red
+edges are removed and gold edges are added by a merge. When a two-city tour $a\to b\to a$ is merged,
+only one copy of its doubled edge is removed, so that edge stays visible.}\label{fig:steps}
+\end{figure}
+
+\paragraph{Conquer and combine.} The sub-tours are merged bottom-up. Table~\ref{tab:trace} lists every
+merge: the two input cycles, the shortest bridge, the edges removed and added, the change in length
+$\Delta$, and the length of the merged cycle. Each row satisfies
+$L(T) = L(T_1) + L(T_2) + \Delta$.
+
+\begin{table}[H]
+\centering
+\caption{Merge steps (bottom-up). Edge weights in km are given in parentheses.}\label{tab:trace}
+\vspace{4pt}
+\scriptsize
+\setlength{\tabcolsep}{3pt}
+\input{../shared/generated/trace}
+\end{table}
+
+\paragraph{Worked calculation of the final merge.}
+\input{../shared/generated/worked-merge}
+
+Finally, the cycle is rotated to begin at V0, giving the closed route
+\begin{center}
+\DCRoute{}
+\end{center}
+of length \textbf{\DCTotal{} km}.

@@ -1,0 +1,32 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Build report",
+      "type": "shell",
+      "command": "latexmk -pdf -interaction=nonstopmode -synctex=1 -outdir=build main.tex",
+      "options": { "cwd": "${workspaceFolder}/latex/report" },
+      "group": { "kind": "build", "isDefault": true },
+      "presentation": { "reveal": "always", "panel": "dedicated" },
+      "problemMatcher": []
+    },
+    {
+      "label": "Build presentation",
+      "type": "shell",
+      "command": "latexmk -pdf -interaction=nonstopmode -synctex=1 -outdir=build main.tex",
+      "options": { "cwd": "${workspaceFolder}/latex/presentation" },
+      "group": "build",
+      "presentation": { "reveal": "always", "panel": "dedicated" },
+      "problemMatcher": []
+    },
+    {
+      "label": "Run TSP solver and refresh LaTeX assets",
+      "type": "shell",
+      "command": "python main.py --export-latex",
+      "options": { "cwd": "${workspaceFolder}/code" },
+      "group": "build",
+      "presentation": { "reveal": "always", "panel": "dedicated" },
+      "problemMatcher": []
+    }
+  ]
+}

@@ -1,0 +1,28 @@
+\subsection{Limitations and Possible Improvements}\label{sec:limitations}
+\paragraph{Limitations of the solution.}
+\begin{itemize}
+  \item The route is approximate (\DCGap\% above optimal) and depends on the random seed.
+  \item Distance is the only cost. Traffic, travel time, opening hours and the time spent at each stop
+        are ignored, although they matter for a real one-day tour.
+  \item Weights are made symmetric by averaging, so one-way streets are only approximated.
+  \item Road distances come from OpenStreetMap routing; Google Maps may give slightly different values.
+\end{itemize}
+
+\paragraph{Improvements.}
+\begin{itemize}
+  \item \textbf{Local search after merging.} Applying 2-opt or Or-opt moves to the final tour removes
+        crossings and long ``seam'' edges such as V8--V0, and usually closes most of the remaining
+        gap~\cite{applegate2006tsp}.
+  \item \textbf{Multiple restarts.} Run several seeds and keep the shortest tour. Each run takes well
+        under a millisecond here, and the best of \RunCount{} runs was \BridgeBest{}~km.
+  \item \textbf{Merge rule.} We also tested the best-splice rule, which may break any edge of either
+        sub-tour rather than only edges next to the shortest bridge. On this instance it reached the
+        optimum more often (\BestRuleOptHits{} vs.\ \BridgeOptHits{} runs) but its mean was
+        \BestRuleMean{}~km against \BridgeMean{}~km (Table~\ref{tab:experiments}). A cheaper merge at
+        each step does not guarantee a shorter final tour, because every merge is still a local,
+        irreversible decision.
+  \item \textbf{Richer weights.} Use travel time with traffic from Google Maps, or a directed (asymmetric)
+        matrix, if the objective changes from distance to time.
+  \item \textbf{Exact methods for small instances.} For about 15 stops or fewer, Held--Karp is fast
+        enough to give the true optimum. Divide and Conquer is most useful when $n$ is too large for that.
+\end{itemize}

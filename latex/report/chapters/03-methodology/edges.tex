@@ -1,0 +1,24 @@
+\subsection{Edges and Weights}\label{sec:edges}
+\paragraph{Edges.} An edge $\{u, v\}$ represents driving from location $u$ to location $v$ along the
+shortest road route between them. Every location can be reached from every other, so $G$ is the
+\textbf{complete graph} $K_{\NumVertices}$ with $\binom{\NumVertices}{2} = \NumEdges$ edges. An edge stands
+for a whole road route, which may pass other locations without stopping; it is not a single street.
+
+\paragraph{Direction.} We treat travel as \textbf{undirected}: $w(u,v) = w(v,u)$. The raw road distances are
+slightly asymmetric because of one-way streets downtown (for example V0$\to$V1 is 1.00~km but V1$\to$V0 is
+1.17~km in the raw data, \texttt{code/data/raw\_directed\_km.csv}). We set
+\[
+  w(u,v) = \tfrac12\bigl(d(u\to v) + d(v\to u)\bigr),
+\]
+rounded to 0.01~km. This keeps the model undirected, as the divide and conquer merge assumes.
+
+\paragraph{Weights and units.} The weight $w(u,v)$ is the road distance in \textbf{kilometres (km)}.
+Table~\ref{tab:matrix} is the complete weight matrix used by the program.
+
+\begin{table}[H]
+\centering
+\caption{Edge weights $w(i,j)$: undirected road distance in km. The matrix is symmetric.}\label{tab:matrix}
+\vspace{4pt}
+\small
+\input{../shared/generated/matrix}
+\end{table}

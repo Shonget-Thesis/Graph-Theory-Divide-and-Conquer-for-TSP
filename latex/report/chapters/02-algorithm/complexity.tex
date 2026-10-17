@@ -1,0 +1,20 @@
+\subsection{Time Complexity}
+
+\begin{theorem}[Theorem~2.8 of~\cite{lunagarcia2024performance}]
+The Divide and Conquer algorithm runs in $O(n^2)$ time on $n$ cities.
+\end{theorem}
+\begin{proof}
+Let $T(n)$ be the running time on $n$ cities. Splitting sorts the cities in $O(n\log n)$ time. Finding the
+shortest bridge compares all $\frac n2 \cdot \frac n2$ cross pairs, which is $O(n^2)$; the reconnection
+then checks at most $2 \times 2$ edge pairs, $O(1)$, and builds the merged list in $O(n)$. Hence
+\[
+  T(n) = 2T\!\left(\tfrac n2\right) + O(n^2), \qquad T(1) = T(2) = O(1).
+\]
+The work at recursion depth $d$ is $2^d \cdot O\!\left((n/2^d)^2\right) = O(n^2/2^d)$, a geometric series
+that sums to $O(n^2)$; equivalently, this is case~3 of the master theorem~\cite{cormen2009introduction}.
+Therefore $T(n) = O(n^2)$~\cite{morenomaza_dc}.
+\end{proof}
+
+The best-splice variant checks $|T_1|\cdot|T_2| \le n^2/4$ edge pairs per merge, so it satisfies the same
+recurrence and is also $O(n^2)$. Apart from the $n\times n$ distance matrix, the algorithm stores only
+the cycles, which take $O(n)$ memory.

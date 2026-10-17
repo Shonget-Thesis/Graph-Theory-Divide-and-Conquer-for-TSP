@@ -1,0 +1,56 @@
+\documentclass[11pt,aspectratio=169]{beamer}
+
+\usetheme{Madrid}
+\definecolor{navy}{HTML}{1F3A68}
+\definecolor{gold}{HTML}{C9A227}
+\setbeamercolor{structure}{fg=navy}
+\setbeamercolor{palette primary}{bg=navy,fg=white}
+\setbeamercolor{palette secondary}{bg=navy!85,fg=white}
+\setbeamercolor{palette tertiary}{bg=navy!70,fg=white}
+\setbeamercolor{frametitle}{bg=navy,fg=white}
+\setbeamercolor{title}{bg=navy,fg=white}
+\setbeamercolor{block title}{bg=navy,fg=white}
+\setbeamercolor{block body}{bg=navy!6}
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{bibliography item}[text]
+
+\usepackage{amsmath,amssymb}
+\usepackage{bm}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{graphicx}
+\usepackage{multirow}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{tikz}
+
+% Shared assets produced by `python main.py --export-latex` (see code/README.md).
+\graphicspath{{../shared/figures/}}
+\input{../shared/generated/macros}
+
+% Red reminder for things the group still has to fill in or confirm. Remove before presenting.
+\newcommand{\groupnote}[1]{\textcolor{red}{[#1]}}
+
+\title[Divide \& Conquer for TSP]{Divide and Conquer for the\\Traveling Salesperson Problem}
+\subtitle{A One-Day City Tour of Downtown Cagayan de Oro}
+\author[Chiong, Limpahan, Locsin, Sajol]{Chiong, Heart \and Limpahan, Mark Vincent \and Locsin, Roxanne \and Sajol, Rhenel Jhon}
+\institute[Graph Theory PIT]{Graph Theory --- Performance Innovative Task (Algorithm 2.8)}
+\date{}
+
+\begin{document}
+
+\begin{frame}
+  \titlepage
+\end{frame}
+
+\begin{frame}{Outline}
+  \tableofcontents
+\end{frame}
+
+\input{sections/01-introduction}
+\input{sections/02-algorithm}
+\input{sections/03-graph-model}
+\input{sections/04-implementation}
+\input{sections/05-conclusion}
+
+\end{document}

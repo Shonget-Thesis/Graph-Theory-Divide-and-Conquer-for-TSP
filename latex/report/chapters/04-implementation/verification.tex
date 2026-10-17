@@ -1,0 +1,11 @@
+\subsection{Verification of the Output}\label{sec:verification}
+The function \texttt{check\_route} confirms that the route (i) starts at V0, (ii) ends at V0, (iii) has
+$\NumVertices + 1$ entries, i.e.\ \NumVertices{} legs, and (iv) contains every vertex V0--V9 exactly once
+before returning to V0. It then \textbf{recomputes the total independently} by adding the matrix weight of
+each leg (Table~\ref{tab:legs}). For our run all checks \DCAllChecks{}, and the recomputed total is
+\DCRecomputed{}~km, equal to the \DCTotal{}~km reported by the algorithm.
+
+In addition, \texttt{test\_dc\_tsp.py} runs both merge rules on random instances with 1 to 39 cities and
+5 seeds each, and checks that every output is a valid closed tour whose recomputed length matches. It
+also checks that the Held--Karp baseline agrees with brute force for 3 to 8 cities, and that the
+heuristic is never shorter than the optimum.

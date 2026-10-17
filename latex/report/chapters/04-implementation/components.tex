@@ -1,0 +1,32 @@
+\subsection{Main Code Components}
+The program is written in Python~3 using only the standard library; matplotlib~\cite{hunter2007matplotlib}
+is used for the figures. Table~\ref{tab:components} maps each part of the algorithm to the code, and the
+full source of the algorithm is in Appendix~\ref{app:code}.
+
+\begin{table}[H]
+\centering
+\caption{Main code components (folder \texttt{code/}).}\label{tab:components}
+\vspace{4pt}
+\small
+\begin{tabularx}{\textwidth}{l l >{\raggedright\arraybackslash}X}
+\toprule
+\textbf{File} & \textbf{Function} & \textbf{Role in the algorithm} \\
+\midrule
+\texttt{data/*.csv} & -- & Input data: vertices (\texttt{locations.csv}) and weights (\texttt{distance\_matrix\_km.csv}). \\
+\texttt{main.py} & \texttt{load\_locations}, \texttt{load\_matrix} & Read the data and check that the matrix is square, symmetric and has a zero diagonal. \\
+\texttt{dc\_tsp.py} & \texttt{divide\_and\_conquer\_tsp} & Entry point: shuffle (Step 1), recurse, rotate the final cycle to start at V0. \\
+ & \texttt{split} & Divide (Step 2): random axis, sort, cut at the median. \\
+ & \texttt{solve} & Recursion: base cases (Step 3), conquer both halves (Step 4), merge; records a trace of every step. \\
+ & \texttt{shortest\_bridge} & Closest cross pair $(a,b)$, $O(n^2)$ (Step 5). \\
+ & \texttt{merge} & Remove one edge per cycle, add the bridge and a closing edge, keep the smallest $\Delta$ (Steps 5--6, Algorithm~\ref{alg:merge}). \\
+\texttt{verify.py} & \texttt{check\_route} & Checks the route is a valid closed tour and recomputes its length from the weights. \\
+ & \texttt{held\_karp} & Exact optimum for comparison only (not part of the assigned algorithm). \\
+\texttt{test\_dc\_tsp.py} & -- & Automated tests: valid tours on random instances of 1--39 cities; Held--Karp agrees with brute force. \\
+\texttt{plots.py}, \texttt{export\_latex.py} & -- & Figures, and the tables used in this report. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+The coordinates are used \emph{only} in \texttt{split}. Every length (bridges, $\Delta$, the total) is
+computed from the road-distance matrix, so the result is measured in road kilometres, not straight-line
+distance.

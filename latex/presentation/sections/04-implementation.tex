@@ -1,0 +1,53 @@
+% Suggested time: 3-4 minutes (includes the live screen recording)
+\section{Python Implementation and Results}
+
+\begin{frame}{Code Components}
+  \small
+  \begin{tabularx}{\textwidth}{l >{\raggedright\arraybackslash}X}
+    \toprule
+    \textbf{Code} & \textbf{What it does} \\
+    \midrule
+    \texttt{data/*.csv} & Input: vertices (\texttt{locations.csv}) and weights (\texttt{distance\_matrix\_km.csv}) \\
+    \texttt{split} & Divide: random axis, sort, median cut \\
+    \texttt{solve} & Recursion and base cases; records each step \\
+    \texttt{shortest\_bridge}, \texttt{merge} & Combine: bridge, remove 2 edges, add 2, smallest $\Delta$ \\
+    \texttt{check\_route} & Valid closed tour? Recompute the total from the weights \\
+    \texttt{held\_karp} & Exact optimum, \emph{for comparison only} \\
+    \bottomrule
+  \end{tabularx}
+\end{frame}
+
+\begin{frame}{Live Demo}
+  \centering
+  \Large\texttt{python main.py}
+  \bigskip
+
+  \normalsize
+  \begin{enumerate}
+    \item Input data: vertices and weight matrix
+    \item Every divide, base-case and merge step, with its arithmetic
+    \item Resulting route and total distance
+    \item Verification checks
+    \item Comparison with the exact optimum
+  \end{enumerate}
+  \bigskip
+  \groupnote{Switch to the screen recording here}
+\end{frame}
+
+\begin{frame}{Resulting Route: \DCTotal{} km}
+  \centering
+  \includegraphics[height=0.86\textheight]{route.pdf}
+\end{frame}
+
+\begin{frame}{Verification: Recomputing the Total}
+  \centering
+  \scriptsize
+  \setlength{\tabcolsep}{4pt}
+  \input{../shared/generated/legs}
+
+  \medskip
+  \footnotesize
+  \textbf{Checks (all \DCAllChecks{}):} starts at V0 \textbullet{} returns to V0 \textbullet{}
+  \NumVertices{} legs \textbullet{} each location exactly once \textbullet{}
+  recomputed \DCRecomputed{} km = reported \DCTotal{} km
+\end{frame}

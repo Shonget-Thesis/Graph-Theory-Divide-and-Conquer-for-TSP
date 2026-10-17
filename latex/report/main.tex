@@ -1,0 +1,81 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[a4paper,margin=0.75in,right=1in]{geometry}
+
+\usepackage{amsmath,amssymb}
+\usepackage{amsthm}
+\usepackage{bm}
+\usepackage{booktabs}
+\usepackage{float}
+\usepackage{tabularx}
+\usepackage{graphicx}
+\usepackage{multirow}
+\usepackage[title]{appendix}
+\usepackage{xcolor}
+\usepackage{algorithm}
+\usepackage{algorithmicx}
+\usepackage{algpseudocode}
+\usepackage{listings}
+\usepackage{tikz}
+\usepackage[colorlinks=true,linkcolor=blue,citecolor=blue,urlcolor=blue]{hyperref}
+
+\setlength{\belowrulesep}{0pt}
+\setlength{\aboverulesep}{0pt}
+\setlength{\intextsep}{8pt plus 2pt minus 2pt}
+
+\theoremstyle{plain}
+\newtheorem{theorem}{Theorem}
+\newtheorem{proposition}[theorem]{Proposition}
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}
+\theoremstyle{remark}
+\newtheorem{remark}{Remark}
+\renewcommand{\qedsymbol}{$\blacksquare$}
+
+\lstset{
+  language=Python, basicstyle=\ttfamily\scriptsize, numbers=left, numberstyle=\tiny\color{gray},
+  keywordstyle=\color{blue!70!black}, commentstyle=\color{green!45!black}, stringstyle=\color{red!60!black},
+  breaklines=true, frame=tb, columns=fullflexible, showstringspaces=false
+}
+
+% Shared assets produced by `python main.py --export-latex` (see code/README.md).
+\graphicspath{{../shared/figures/}}
+\input{../shared/generated/macros}
+
+% Red reminder for things the group still has to fill in or confirm. Remove before submitting.
+\newcommand{\groupnote}[1]{\textcolor{red}{[#1]}}
+
+\raggedbottom
+
+\title{Divide and Conquer for the Traveling Salesperson Problem:\\
+\large A One-Day City Tour of Downtown Cagayan de Oro}
+\author{Chiong, Heart \and Limpahan, Mark Vincent \and Locsin, Roxanne \and Sajol, Rhenel Jhon}
+\date{Graph Theory --- Performance Innovative Task (Algorithm 2.8)}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+We study the Divide and Conquer heuristic for the Traveling Salesperson Problem (TSP), Algorithm~2.8 of
+Luna-Garcia, Candano and Caga-anan~\cite{lunagarcia2024performance}, and apply it to a one-day city tour
+of \NumVertices{} locations in downtown Cagayan de Oro City that starts and ends at the \StartName. The tour is
+modelled as a complete undirected weighted graph whose edge weights are road distances in kilometres.
+We implement the algorithm in Python, correcting its merge step so that it always returns a valid
+Hamiltonian cycle. With seed \DCSeed{} it produces the route \DCRoute{} of length \DCTotal{}~km. An exact
+Held--Karp computation, used only for comparison, gives an optimum of \OptTotal{}~km, so this route is a
+\emph{non-optimal} approximation that is \DCGap\% longer than the best possible tour.
+\end{abstract}
+
+\input{chapters/01-introduction/chapter}
+\input{chapters/02-algorithm/chapter}
+\input{chapters/03-methodology/chapter}
+\input{chapters/04-implementation/chapter}
+\input{chapters/05-conclusion/chapter}
+
+\bibliographystyle{plain}
+\bibliography{dc-tsp-refs}
+
+\begin{appendices}
+\input{chapters/appendix/chapter}
+\end{appendices}
+\end{document}

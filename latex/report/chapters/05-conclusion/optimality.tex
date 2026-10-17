@@ -1,0 +1,27 @@
+\subsection{Is the Route Optimal?}\label{sec:optimality}
+Divide and Conquer gives no proof of optimality, so we checked the result separately. With only
+\NumVertices{} vertices, the exact Held--Karp algorithm~\cite{heldkarp1962} (Algorithm~2.2 of the
+paper) can be run in well under a second. It gives the provably optimal tour
+\begin{center}
+\OptRoute{}
+\end{center}
+of length \textbf{\OptTotal{} km}. Our Divide and Conquer route is therefore \textbf{not optimal}: it is
+\DCTotal{} km, i.e.\ \DCGap\% longer than the optimum. It is an \emph{approximate} solution.
+
+Because the algorithm is randomised, we also repeated it with \RunCount{} different seeds, as the paper does
+in its Table~2. Table~\ref{tab:experiments} summarises the results.
+
+\begin{table}[H]
+\centering
+\caption{Tour length (km) over \RunCount{} seeds, compared with the exact optimum. ``Optimal'' counts the runs
+that reached the optimum.}\label{tab:experiments}
+\vspace{4pt}
+\small
+\input{../shared/generated/experiments}
+\end{table}
+
+With the paper's shortest-bridge merge, the tour length ranged from \BridgeBest{} to \BridgeWorst{}~km
+(mean \BridgeMean{}~km, \BridgeMeanGap\% above optimal). Only \BridgeOptHits{} of the \RunCount{} runs
+happened to produce an optimal tour, and the algorithm itself cannot recognise when this happens; only
+the separate Held--Karp check shows it. This confirms that the method is a heuristic: on its own it
+gives a good tour, not a proven optimal one.
