@@ -1,0 +1,19 @@
+\subsection{Vertices}\label{sec:vertices}
+The problem is modelled as a weighted graph $G = (V, E, w)$. Each vertex is one location the tour must
+visit, labelled V0--V9 (Table~\ref{tab:vertices}). V0 is the start and end point. The coordinates locate
+each vertex on the map and are used by the divide step: $x$ is the longitude and $y$ is the latitude.
+
+\begin{table}[H]
+\centering
+\caption{Vertices of the graph: the \NumVertices{} tour locations in Cagayan de Oro City.}\label{tab:vertices}
+\vspace{4pt}
+\footnotesize
+\input{../shared/generated/vertices}
+\end{table}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{graph.pdf}
+\caption{Labelled graph model of downtown Cagayan de Oro. Every pair of locations is joined by an edge
+(complete graph $K_{\NumVertices}$). Edge weights are listed in Table~\ref{tab:matrix}.}\label{fig:graph}
+\end{figure}

@@ -1,0 +1,34 @@
+\subsection{Data Sources: Actual and Assumed Data}\label{sec:data}
+
+\begin{table}[H]
+\centering
+\caption{Sources of the data, separating actual data from assumptions.}\label{tab:sources}
+\vspace{4pt}
+\small
+\begin{tabularx}{\textwidth}{l l >{\raggedright\arraybackslash}X}
+\toprule
+\textbf{Item} & \textbf{Type} & \textbf{Source / justification} \\
+\midrule
+Locations (V0--V9) & Actual & Real places in Cagayan de Oro City, located on Google
+  Maps~\cite{googlemaps} and OpenStreetMap~\cite{osm}. \groupnote{Confirm each pin in Google Maps
+  and add screenshots.} \\
+Coordinates & Actual & OpenStreetMap, retrieved with the Nominatim geocoder~\cite{osm}. \\
+Road distances $d(u\to v)$ & Actual & Shortest driving route on the OpenStreetMap road network,
+  computed by the OSRM routing engine~\cite{luxen2011osrm} (\texttt{code/tools/build\_dataset.py}).
+  \groupnote{Spot-check several pairs against Google Maps driving distances.} \\
+Symmetric weights $w(u,v)$ & Assumed & Average of the two directions (Section~\ref{sec:edges}). \\
+Travel mode, no traffic or time windows & Assumed & Simplifications listed in Section~\ref{sec:problem}. \\
+Choice of the nine stops and the start & Assumed & Scenario chosen by the group. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+All the data are in plain CSV files under \texttt{code/data/}:
+\begin{itemize}
+  \item \texttt{locations.csv}: the vertices (Table~\ref{tab:vertices});
+  \item \texttt{distance\_matrix\_km.csv}: the edge weights (Table~\ref{tab:matrix});
+  \item \texttt{raw\_directed\_km.csv}: the raw directed distances, before averaging.
+\end{itemize}
+The program reads these files directly, and every table
+and figure in this report is generated from the same run of the program, so the graph, the data, the
+program input and the reported results are consistent.

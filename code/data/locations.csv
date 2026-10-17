@@ -1,0 +1,11 @@
+id,label,name,area,lat,lon,role
+0,V0,USTP Cagayan de Oro Campus,"C. M. Recto Ave, Lapasan",8.4860705,124.6568050,start
+1,V1,Limketkai Center,"Lapasan",8.4813905,124.6563741,stop
+2,V2,Centrio Mall,"C. M. Recto Ave, Licoan",8.4848309,124.6506238,stop
+3,V3,Pelaez Sports Center,"Don Apolinar Velez St, Burgos",8.4817983,124.6470215,stop
+4,V4,Museo de Oro (Xavier University),"Corrales Ave, Nazareth",8.4758675,124.6459752,stop
+5,V5,Divisoria Plaza,"Barangay 5, Carmen",8.4774972,124.6446455,stop
+6,V6,St. Augustine Metropolitan Cathedral,"Gaston Circle, Carmen",8.4749735,124.6414705,stop
+7,V7,Port of Cagayan de Oro,"Macabalan",8.4945316,124.6621902,stop
+8,V8,Liceo de Cagayan University,"R. N. Pelaez Blvd, Carmen",8.4856639,124.6392658,stop
+9,V9,Capitol University,"Corrales Ext, Barangay 25",8.4881832,124.6525703,stop

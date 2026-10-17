@@ -1,0 +1,49 @@
+% Suggested time: 2-3 minutes
+\section{Problem and Objective}
+
+\begin{frame}{The Traveling Salesperson Problem}
+  \begin{itemize}
+    \item Visit every required location \textbf{exactly once} and \textbf{return to the start},
+          with the smallest total cost.
+    \item In graph terms: find a \textbf{minimum-weight Hamiltonian cycle}.
+    \item NP-hard~\cite{garey1979computers}: exact methods blow up
+          (brute force $O(n!)$, Held--Karp $O(n^2 2^n)$).
+    \item So we use fast \textbf{heuristics}. Ours is \textbf{Divide and Conquer}, Algorithm~2.8 of
+          Luna-Garcia, Candano \& Caga-anan (2024)~\cite{lunagarcia2024performance}.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Our Real-Life Problem: A Downtown Cagayan de Oro Tour}
+  \begin{columns}[T]
+    \begin{column}{0.55\textwidth}
+      \textbf{Situation.} The university hosts visiting guests and takes them on a one-day tour by
+      service vehicle.
+      \medskip
+
+      \textbf{Start / end:} V0 --- \StartName.
+
+      \textbf{Required stops:} 9 downtown landmarks (V1--V9), all within about $2.5\times2$ km.
+      \medskip
+
+      \textbf{Objective:} minimise the total \textbf{driving distance (km)}
+      \[ L(T) = \sum_{k=0}^{n-1} w(v_k, v_{k+1}),\quad v_0 = v_n = \mathrm{V0}. \]
+    \end{column}
+    \begin{column}{0.42\textwidth}
+      \begin{block}{Assumptions}
+        \small
+        \begin{itemize}
+          \item Car; shortest driving route between stops
+          \item Distance the same both ways
+          \item No traffic, opening hours or dwell time
+        \end{itemize}
+      \end{block}
+      \begin{block}{Constraints}
+        \small
+        \begin{itemize}
+          \item Start and end at V0
+          \item Each stop visited exactly once
+        \end{itemize}
+      \end{block}
+    \end{column}
+  \end{columns}
+\end{frame}

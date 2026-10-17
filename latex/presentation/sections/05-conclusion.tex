@@ -1,0 +1,65 @@
+% Suggested time: 1-2 minutes
+\section{Conclusion}
+
+\begin{frame}{Is It Optimal? No --- and We Can Show It}
+  \small
+  Exact Held--Karp~\cite{heldkarp1962} on the same graph, used only for comparison:
+  \begin{center}
+    \OptRoute{} \quad = \textbf{\OptTotal{} km}
+  \end{center}
+  Our Divide and Conquer route: \textbf{\DCTotal{} km}, i.e.\ \textbf{\DCGap\% above optimal}, so it is an
+  \textbf{approximate} solution.
+  \medskip
+
+  \centering
+  \scriptsize
+  \input{../shared/generated/experiments}
+
+  \medskip
+  \footnotesize Repeated over \RunCount{} random seeds, as in Table~2 of the paper: only \BridgeOptHits{} runs
+  happened to be optimal, and the algorithm cannot tell which.
+\end{frame}
+
+\begin{frame}{Limitations and Improvements}
+  \begin{columns}[T]
+    \begin{column}{0.48\textwidth}
+      \begin{block}{Limitations}
+        \small
+        \begin{itemize}
+          \item Approximate; depends on the seed
+          \item Distance only: no traffic or time windows
+          \item One-way streets averaged
+        \end{itemize}
+      \end{block}
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \begin{block}{Improvements}
+        \small
+        \begin{itemize}
+          \item 2-opt / Or-opt to fix seam edges (e.g.\ V8--V0)
+          \item Restart with several seeds, keep the best (best of \RunCount{}: \BridgeBest{} km)
+          \item Best-splice merge: more optimal hits, but no better on average
+          \item Travel-time weights from Google Maps
+        \end{itemize}
+      \end{block}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Conclusion}
+  \begin{itemize}
+    \item Modelled a downtown Cagayan de Oro tour as a TSP on $K_{\NumVertices}$ with road distances (km).
+    \item Implemented Divide and Conquer (Algorithm 2.8), fixing the merge so that it always gives a
+          valid Hamiltonian cycle, in $O(n^2)$ time.
+    \item Route: \DCRoute{}
+    \item Total \textbf{\DCTotal{} km}, verified; \textbf{\DCGap\% above} the optimum of \OptTotal{} km.
+    \item Fast and valid, but \textbf{approximate}, not proven optimal.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[allowframebreaks]{References}
+  \tiny
+  \nocite{lunagarcia2024performance, karp1977probabilistic, codingdrills_dc_tsp, morenomaza_dc, osm, googlemaps, luxen2011osrm, hunter2007matplotlib, applegate2006tsp}
+  \bibliographystyle{plain}
+  \bibliography{dc-tsp-refs}
+\end{frame}

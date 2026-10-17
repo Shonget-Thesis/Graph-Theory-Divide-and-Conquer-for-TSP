@@ -1,0 +1,10 @@
+\subsection{Conclusion}
+We modelled a one-day city tour of downtown Cagayan de Oro as a TSP on the complete undirected graph
+$K_{\NumVertices}$, with road distances in kilometres as weights, and solved it with the Divide and
+Conquer algorithm of Luna-Garcia et al.~\cite{lunagarcia2024performance}. The paper's merge code does
+not produce a valid tour, so we implemented the merge as a proper cycle splice through the shortest
+bridge, which keeps the algorithm's $O(n^2)$ running time. The program found the closed route
+\DCRoute{} of \DCTotal{}~km; we verified that it visits every location exactly once and recomputed
+its length from the weights. Compared with the exact optimum of \OptTotal{}~km, the route is
+\DCGap\% longer. Divide and Conquer therefore gave a fast, valid, \emph{approximate} tour, not a
+proven optimal one; a local-search pass or several restarts would improve it.

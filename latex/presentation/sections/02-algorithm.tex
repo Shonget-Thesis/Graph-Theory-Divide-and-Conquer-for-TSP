@@ -1,0 +1,94 @@
+% Suggested time: 2-3 minutes
+\section{The Divide and Conquer Algorithm}
+
+\begin{frame}{Divide and Conquer: The Procedure}
+  \begin{columns}[T]
+    \begin{column}{0.56\textwidth}
+      \small
+      \begin{enumerate}
+        \item \textbf{Shuffle} the cities at random.
+        \item \textbf{Divide:} pick the $x$ or $y$ axis at random, sort, and cut at the median.
+        \item \textbf{Base cases:} 1 city $\Rightarrow$ length 0; \\
+              2 cities $a,b$ $\Rightarrow$ tour $a\to b\to a$, length $2w(a,b)$.
+        \item \textbf{Conquer:} solve both halves recursively.
+        \item \textbf{Combine:} join the two tours through the \textbf{shortest bridge}.
+        \item \textbf{Adjust} so that no city repeats.
+      \end{enumerate}
+    \end{column}
+    \begin{column}{0.42\textwidth}
+      \begin{block}{Complexity}
+        \[ T(n) = 2T(n/2) + \underbrace{O(n^2)}_{\text{bridge search}} = O(n^2) \]
+        \small Merge cost halves at each level: a geometric series~\cite{cormen2009introduction}.
+      \end{block}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{The Merge Step (and a Fix to the Paper's Code)}
+  \begin{columns}[T]
+    \begin{column}{0.5\textwidth}
+      \small
+      \textbf{Paper's code:} \texttt{tour1[:-1] + [a,b] + tour2}
+      \begin{itemize}
+        \item The bridge cities $a, b$ end up \textbf{repeated}.
+        \item On the paper's 7-city example it returns 13 entries and does not return to the start.
+      \end{itemize}
+      \medskip
+      \textbf{Our merge (keeps the shortest bridge):}
+      \begin{enumerate}
+        \item Find the shortest bridge $(a,b)$.
+        \item Remove one edge $(a,a')$ of $T_1$ and one edge $(b,b')$ of $T_2$.
+        \item Add $(a,b)$ and $(a',b')$; keep the cheapest choice:
+      \end{enumerate}
+      \[ \Delta = w(a,b) + w(a',b') - w(a,a') - w(b,b') \]
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \centering
+      \begin{tikzpicture}[scale=0.85, every node/.style={circle, draw, fill=navy!10, inner sep=1.5pt, font=\scriptsize}]
+        \node (a1) at (0,0) {$a'$}; \node (a) at (1.5,0) {$a$};
+        \node (c1) at (1.5,2) {}; \node (c2) at (0,2) {};
+        \node (b) at (3.5,0) {$b$}; \node (b1) at (5,0) {$b'$};
+        \node (d1) at (5,2) {}; \node (d2) at (3.5,2) {};
+        \draw (a) -- (c1) -- (c2) -- (a1);
+        \draw[dashed, red] (a1) -- (a);
+        \draw (b) -- (d2) -- (d1) -- (b1);
+        \draw[dashed, red] (b) -- (b1);
+        \draw[very thick, gold!80!black] (a) -- node[draw=none, fill=none, below] {bridge} (b);
+        \draw[very thick, gold!80!black] (a1) to[bend right=35] (b1);
+      \end{tikzpicture}
+
+      \scriptsize \textcolor{red}{dashed} = removed, \textcolor{gold!80!black}{gold} = added. \\
+      Result: one cycle, every city exactly once.
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Advantages, Limitations, Optimality}
+  \begin{columns}[T]
+    \begin{column}{0.48\textwidth}
+      \begin{block}{Advantages}
+        \small
+        \begin{itemize}
+          \item Fast: $O(n^2)$
+          \item Simple; halves can run in parallel
+          \item Nearby places tend to be visited together
+        \end{itemize}
+      \end{block}
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \begin{block}{Limitations}
+        \small
+        \begin{itemize}
+          \item Greedy merges are never undone
+          \item Result depends on the random splits
+          \item Splits by map position, not road distance
+          \item Weakest average quality in the paper at 128--256 cities~\cite{lunagarcia2024performance}
+        \end{itemize}
+      \end{block}
+    \end{column}
+  \end{columns}
+  \bigskip
+  \begin{center}
+    \textbf{Heuristic:} always a valid tour, \textbf{no guarantee of optimality}.
+  \end{center}
+\end{frame}

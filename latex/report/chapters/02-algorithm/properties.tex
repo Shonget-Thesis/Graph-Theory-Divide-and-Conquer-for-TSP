@@ -1,0 +1,30 @@
+\subsection{Advantages, Limitations and Optimality}
+
+\paragraph{Advantages.}
+\begin{itemize}
+  \item \textbf{Fast and scalable:} $O(n^2)$ time, compared with $O(n!)$ for brute force and $O(n^22^n)$ for
+        Held--Karp. In the paper's experiments its average running time was far below that of PSO and the
+        genetic algorithm at every size tested~\cite{lunagarcia2024performance}.
+  \item \textbf{Simple and local:} each subproblem only involves nearby cities, so the recursion is easy
+        to follow and to work out by hand, and the two halves could be solved in parallel.
+  \item \textbf{Uses geography:} cities that are close together tend to be visited consecutively,
+        which suits road networks with dense clusters such as downtown Cagayan de Oro.
+\end{itemize}
+
+\paragraph{Limitations.}
+\begin{itemize}
+  \item \textbf{No optimality guarantee:} each merge is decided greedily and never revisited, so a poor
+        early split cannot be undone. In the paper's experiments, Divide and Conquer had the highest
+        average tour length of all heuristics on the 128- and 256-city instances~\cite{lunagarcia2024performance}.
+  \item \textbf{Depends on random choices:} different axis choices give different tours (Section~\ref{sec:results}).
+  \item \textbf{Needs coordinates:} the divide step uses map positions, while the cost uses road
+        distances. Two places close on the map can be far apart by road (rivers, one-way streets), and
+        the split does not see this.
+  \item \textbf{Boundary effects:} the median cut can separate two cities that are very close to each
+        other, forcing extra travel across the cut line.
+\end{itemize}
+
+\paragraph{Optimal or approximate?} Divide and Conquer is a \textbf{heuristic}. It always returns a valid
+tour, but it does \emph{not} guarantee an optimal one, and no constant worst-case approximation ratio is
+established for it. Our own instance shows this: the route it finds is longer than the optimum computed
+by Held--Karp (Section~\ref{sec:results}).

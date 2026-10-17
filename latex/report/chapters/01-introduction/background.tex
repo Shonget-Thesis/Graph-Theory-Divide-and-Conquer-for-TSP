@@ -1,0 +1,12 @@
+\subsection{Background}
+The Traveling Salesperson Problem (TSP) asks for the shortest route that visits each of a set of required
+locations exactly once and returns to the starting location. In graph-theoretic terms, given a weighted
+graph we seek a \textbf{Hamiltonian cycle} of minimum total weight. The decision version of the TSP is
+NP-complete~\cite{garey1979computers}, so no known algorithm solves every instance exactly in polynomial
+time. Exact methods such as brute force ($O(n!)$) and Held--Karp dynamic programming
+($O(n^2 2^n)$)~\cite{heldkarp1962} quickly become impractical as the number of locations grows, which
+motivates fast \emph{heuristics} that trade a guarantee of optimality for speed~\cite{applegate2006tsp}.
+
+Luna-Garcia, Candano and Caga-anan~\cite{lunagarcia2024performance} compare eight classical TSP algorithms.
+This report studies the one assigned to our group, the \textbf{Divide and Conquer algorithm}
+(Section~2.8 of that paper), and uses it to plan a real route in Cagayan de Oro City.

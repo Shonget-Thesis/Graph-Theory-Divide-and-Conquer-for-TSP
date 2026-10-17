@@ -1,0 +1,37 @@
+\subsection{Problem and Objective}\label{sec:problem}
+
+\paragraph{Real-life situation.} The university hosts a group of visiting guests (for example, delegates
+from a partner school) and plans a one-day city tour for them by service vehicle. The tour leaves the
+\textbf{\StartName}, stops once at each of nine landmarks in downtown Cagayan de Oro City, and
+returns to the campus at the end of the day. The planners want the order of stops that keeps the total
+driving distance as short as possible, which saves fuel and leaves more time at each stop. This is
+exactly a TSP.
+
+\paragraph{Area.} Downtown Cagayan de Oro City, Misamis Oriental. All ten locations lie within the
+city centre and the neighbouring Poblacion barangays (Lapasan, Licoan, Burgos, Nazareth, Carmen and
+Macabalan), in an area of roughly $2.5 \times 2$~km. We restricted the study to downtown so that
+every stop is reachable in a few minutes and the whole graph fits on one readable map.
+
+\paragraph{Starting location and required locations.} The start and end point is V0 (\StartName). The nine
+required stops are V1--V9, listed with their coordinates in Table~\ref{tab:vertices}
+(Section~\ref{sec:method}).
+
+\paragraph{Assumptions.}
+\begin{enumerate}
+  \item The group travels by car, and between any two stops the driver follows the shortest driving route
+        on the public road network.
+  \item The distance between two stops is the same in both directions. Where the road data differ
+        because of one-way streets, we use the average of the two directions (Section~\ref{sec:edges}).
+  \item Traffic, opening hours, waiting and the time spent at each stop are not modelled; they do not
+        change the driving distance.
+  \item The vehicle has no capacity or fuel limit within one day.
+\end{enumerate}
+
+\paragraph{Constraints.} The route must (i) start and end at V0, and (ii) visit every one of V1--V9
+\emph{exactly once}. In graph terms, it must be a Hamiltonian cycle of the graph in Section~\ref{sec:method}.
+
+\paragraph{Objective.} Minimise the \textbf{total travel distance in kilometres},
+\[
+  \min_{\text{tours } T} \; L(T) = \sum_{k=0}^{n-1} w(v_{k}, v_{k+1}), \qquad v_0 = v_n = \mathrm{V0},
+\]
+where $w(u,v)$ is the road distance between $u$ and $v$ and $n = \NumVertices$ is the number of locations.
