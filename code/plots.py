@@ -18,7 +18,7 @@ def _base(ax, locations, coords, title):
                     ha="center", va="center", zorder=4)
         above = loc["label"] in LABEL_ABOVE
         ax.annotate(loc["name"], (x, y), xytext=(0, 13 if above else -13), textcoords="offset points",
-                    fontsize=7.5, ha="center", va="bottom" if above else "top", zorder=4,
+                fontsize=7.5, ha="center", va="bottom" if above else "top", zorder=4,
                     bbox=dict(boxstyle="round,pad=0.15", fc="white", ec="none", alpha=0.8))
     # explicit limits: arrow patches would otherwise distort autoscaling
     xs, ys = [c[0] for c in coords], [c[1] for c in coords]
@@ -190,7 +190,7 @@ def plot_route(locations, coords, route, total, path, pdf_path=None):
                                      color=ROUTE_COLOR, lw=1.8, shrinkA=10, shrinkB=10, zorder=2))
         ax.annotate(str(k + 1), ((x1 + x2) / 2, (y1 + y2) / 2), fontsize=7, color=ROUTE_COLOR,
                     ha="center", va="center", zorder=3,
-                    bbox=dict(boxstyle="circle,pad=0.15", fc="white", ec=ROUTE_COLOR, lw=0.7))
+                bbox=dict(boxstyle="circle,pad=0.15", fc="white", ec=ROUTE_COLOR, lw=0.7))
     order = " $\\to$ ".join(f"V{v}" for v in route)
     _base(ax, locations, coords,
           f"Divide and conquer route: {total:.2f} km (circled numbers = leg order)\n{order}")

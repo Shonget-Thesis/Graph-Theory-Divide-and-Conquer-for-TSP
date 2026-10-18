@@ -17,8 +17,10 @@ Algorithm~\ref{alg:dc} restates Algorithm~2.8 of~\cite{lunagarcia2024performance
 \end{algorithmic}
 \end{algorithm}
 
-\paragraph{Step 1: Shuffle.} The input order is randomised. Our split sorts by coordinate, so the
-shuffle only affects how ties are broken. The randomness that matters is the choice of axis in Step~2.
+\paragraph{Step 1: Shuffle.} The input order is randomised. Our split sorts by coordinate using a
+deterministic coordinate-and-index key, so the shuffle does not change the splits. It is kept to follow
+the paper, and it only advances the random-number generator; the randomness that changes the result is
+the choice of axis in Step~2.
 
 \paragraph{Step 2: Divide.} Pick the $x$ axis (longitude) or the $y$ axis (latitude) at random, sort the
 cities along it, and cut at the median. This gives two halves of sizes $\lfloor m/2\rfloor$ and
@@ -33,11 +35,11 @@ and $T_2$ for the second.
 \paragraph{Steps 5--6: Combine (merge).} The two cycles must become \emph{one} cycle that still visits
 each city once. The paper's code (Appendix~4.8 of~\cite{lunagarcia2024performance}) concatenates
 \texttt{tour1[:-1] + [a, b] + tour2}, where $(a,b)$ is the shortest bridge. This does not give a valid
-tour, because $a$ and $b$ are already in \texttt{tour1} and \texttt{tour2}. We ran that listing unchanged
-on the paper's own 7-city example: it returned sequences of 13 entries that repeat cities and do not
-return to the start, and for some seeds the reported distance did not equal the length of the returned
-sequence. In other words, the step ``adjust the merged solution so no city is repeated'' is never
-actually carried out.
+tour, because $a$ and $b$ are already in \texttt{tour1} and \texttt{tour2}. A preserved run of this
+paper-style expression on a seven-city subproblem is stored in
+\texttt{code/original\_merge\_output.txt}: the returned sequence has eight entries, repeats V5, and
+does not close at its start. In other words, the step ``adjust the merged solution so no city is repeated''
+is never actually carried out.
 
 We therefore implement the merge in the standard way for joining two cycles, which keeps the paper's
 ``shortest bridge'' rule:
@@ -65,5 +67,5 @@ single edge $a$--$b$. Section~\ref{sec:apply} shows this procedure on our data.
 We also implemented a variant, the \emph{best-splice} rule, that does not insist on using the shortest
 bridge: it tries every edge of $T_1$ against every edge of $T_2$ and keeps the smallest $\Delta$. It is
 still $O(n^2)$ per merge. Unless stated otherwise, all results use the paper-faithful shortest-bridge
-rule; the variant is compared in Section~\ref{sec:limitations}.
+rule; the variant is compared in Sections~\ref{sec:optimality} and~\ref{sec:limitations}.
 \end{remark}

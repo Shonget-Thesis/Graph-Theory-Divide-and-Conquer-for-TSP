@@ -5,8 +5,10 @@ The Divide and Conquer algorithm runs in $O(n^2)$ time on $n$ cities.
 \end{theorem}
 \begin{proof}
 Let $T(n)$ be the running time on $n$ cities. Splitting sorts the cities in $O(n\log n)$ time. Finding the
-shortest bridge compares all $\frac n2 \cdot \frac n2$ cross pairs, which is $O(n^2)$; the reconnection
-then checks at most $2 \times 2$ edge pairs, $O(1)$, and builds the merged list in $O(n)$. Hence
+shortest bridge compares all $\frac n2 \cdot \frac n2$ cross pairs, which is $O(n^2)$. The
+implementation then loops over all pairs of edges from the two cycles and skips most pairs when the
+shortest-bridge endpoints are not incident; even though most iterations are skipped, this loop is still
+$O(n^2)$ in the worst case. It builds the merged list in $O(n)$. Hence
 \[
   T(n) = 2T\!\left(\tfrac n2\right) + O(n^2), \qquad T(1) = T(2) = O(1).
 \]

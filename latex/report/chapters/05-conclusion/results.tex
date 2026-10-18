@@ -3,8 +3,14 @@ With seed \DCSeed{}, the Divide and Conquer algorithm returns the closed route
 \begin{center}
 \DCRoute{}
 \end{center}
-with a total driving distance of \textbf{\DCTotal{} km}. Table~\ref{tab:legs} gives each leg, and
-Figure~\ref{fig:route} draws the route on the map.
+with a total driving distance of \textbf{\DCTotal{} km}. Figure~\ref{fig:route} draws the route on the map,
+and Table~\ref{tab:legs} gives each leg.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{route.pdf}
+\caption{Divide and Conquer route (seed \DCSeed{}). Small offset labels give the leg order and map-derived road distance in km.}\label{fig:route}
+\end{figure}
 
 \begin{table}[H]
 \centering
@@ -15,18 +21,36 @@ Figure~\ref{fig:route} draws the route on the map.
 \input{../shared/generated/legs}
 \end{table}
 
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.85\textwidth]{route.pdf}
-\caption{Divide and Conquer route (seed \DCSeed{}). Circled numbers give the order of the legs.}\label{fig:route}
-\end{figure}
+The route totals \textbf{13.82 km} under the symmetric matrix used by the
+algorithm. For comparison, summing the raw one-way OSRM values as driven in
+the direction $V_0\to V_1\to V_7\to V_9\to V_2\to V_3\to V_4\to V_5\to
+V_6\to V_8\to V_0$ gives \textbf{13.54 km}. The difference reflects the
+assumption that the optimization model uses averaged undirected weights.
 
-\paragraph{Interpretation.} The route meets the objective's constraints: the guests leave USTP, visit
-each of the nine landmarks exactly once, and return to USTP. It forms one loop: south to Limketkai,
-north to the port, then south-west through Capitol University, Centrio, Pelaez, Museo de Oro,
-Divisoria and the Cathedral, and finally north-west to Liceo before heading back east to USTP. Because the divide step groups
-nearby places, the tight cluster around Divisoria (V4, V5, V6) is visited consecutively using its
-shortest edges (0.54 and 0.74~km). The weakest part is the last leg, Liceo (V8) back to USTP
-(2.62~km). It was created by the final merge (Table~\ref{tab:trace}), which had to reconnect the two
-halves through the shortest bridge V2--V3 and therefore closed the loop with the long edge V8--V0.
-This is the ``boundary effect'' limitation of Section~\ref{sec:algorithm} appearing in practice.
+\paragraph{Interpretation.} The route meets the constraints of the objective:
+the guests leave USTP, visit each of the nine landmarks exactly once, and
+return to USTP. It forms one loop: south to Limketkai, north to the port, then
+south-west through Capitol University, Centrio, Pelaez, Museo de Oro,
+Divisoria and the Cathedral, and finally north to Liceo before heading
+back east to USTP. Because the divide step groups nearby places, the tight
+cluster around Divisoria (V4, V5, V6) is visited consecutively using short
+edges (0.54 and 0.74 km).
+
+The route differs from the optimal tour of Section~5.2 in only one place: the
+order of the stops inside this cluster. Our route visits
+$V_3 \to V_4 \to V_5 \to V_6$ ($1.31 + 0.54 + 0.74 = 2.59$ km), whereas the
+optimal tour visits $V_3 \to V_5 \to V_4 \to V_6$ ($0.97 + 0.54 + 0.87 =
+2.38$ km). Merge M1 only produces the triangle $V_3, V_4, V_5$, whose length
+does not depend on any order. The order is decided by merge M2
+(Table~\ref{tab:trace}). There the shortest bridge is $V_6$--$V_5$ (0.74 km),
+and the paper-faithful rule requires this edge to be added. The cheapest way to
+open the triangle around it removes $V_3$--$V_5$ and leaves the path
+$V_3 \to V_4 \to V_5$ ($\Delta = +0.27$ km). The optimal order needs the edge
+$V_6$--$V_4$ (0.87 km), which is not the shortest bridge and so is never
+considered. Opening the triangle at $V_3$--$V_4$ and adding $V_6$--$V_4$ and
+$V_8$--$V_3$ would give $\Delta = (0.87 + 2.15) - (1.31 + 1.65) = +0.06$ km,
+which is 0.21 km cheaper. However, this option does not use the shortest
+bridge $V_6$--$V_5$, so the paper-faithful rule never considers it; only the
+best-splice variant can choose it. The long final leg $V_8 \to V_0$ (2.62 km)
+is not the cause of the gap, since the optimal tour uses the same edge. This is
+an example of the greedy, irreversible merge decisions described in Section~2.4.

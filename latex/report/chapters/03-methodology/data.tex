@@ -9,13 +9,12 @@
 \toprule
 \textbf{Item} & \textbf{Type} & \textbf{Source / justification} \\
 \midrule
-Locations (V0--V9) & Actual & Real places in Cagayan de Oro City, located on Google
-  Maps~\cite{googlemaps} and OpenStreetMap~\cite{osm}. \groupnote{Confirm each pin in Google Maps
-  and add screenshots.} \\
+Locations (V0--V9) & Actual & Real places in Cagayan de Oro City, located using Google
+Maps~\cite{googlemaps} and OpenStreetMap~\cite{osm}. \\
 Coordinates & Actual & OpenStreetMap, retrieved with the Nominatim geocoder~\cite{osm}. \\
-Road distances $d(u\to v)$ & Actual & Shortest driving route on the OpenStreetMap road network,
-  computed by the OSRM routing engine~\cite{luxen2011osrm} (\texttt{code/tools/build\_dataset.py}).
-  \groupnote{Spot-check several pairs against Google Maps driving distances.} \\
+Road distances $d(u\to v)$ & Actual (map-derived) & Length reported by the OSRM Table service~\cite{osrmapi}
+ using its driving profile on the OpenStreetMap road network (\texttt{code/tools/build\_dataset.py});
+ cross-checked in Table~\ref{tab:gmaps}. \\
 Symmetric weights $w(u,v)$ & Assumed & Average of the two directions (Section~\ref{sec:edges}). \\
 Travel mode, no traffic or time windows & Assumed & Simplifications listed in Section~\ref{sec:problem}. \\
 Choice of the nine stops and the start & Assumed & Scenario chosen by the group. \\
@@ -31,4 +30,42 @@ All the data are in plain CSV files under \texttt{code/data/}:
 \end{itemize}
 The program reads these files directly, and every table
 and figure in this report is generated from the same run of the program, so the graph, the data, the
-program input and the reported results are consistent.
+program input and the reported results are consistent. The OSRM request was retrieved in October 2026;
+the committed CSV files are the dataset of record, since the public demo service and its OpenStreetMap
+data can change over time.
+
+\paragraph{Cross-check with Google Maps.}
+Table~\ref{tab:gmaps} compares each leg of the final route with the driving
+distance shown by separate Google Maps searches for each leg in driving mode, in route order.
+The Google values are rounded to the nearest 0.05--0.10 km as displayed by
+the searches. The two sources
+agree on the whole tour within 4.2\%, but individual legs differ by up to
+39\%. Possible reasons are different pin positions, one-way streets, and
+different road choices and turn restrictions. Both readings were made in driving mode, but Google Maps
+and OSRM independently select routes using different map data and routing rules. We keep the OSRM matrix as the dataset because it is
+reproducible and is read directly by the program.
+
+\begin{table}[H]
+\centering
+\caption{Cross-check of the route legs: OSRM matrix versus Google Maps (km).}
+\label{tab:gmaps}
+\small
+\begin{tabular}{c l r r r r}
+\toprule
+\textbf{Leg} & \textbf{From $\to$ To} & \textbf{Matrix} & \textbf{Google} & \textbf{Diff.} & \textbf{\%} \\
+\midrule
+1 & V0 $\to$ V1 & 1.09 & 0.70 & $-0.39$ & $-36$ \\
+2 & V1 $\to$ V7 & 2.32 & 3.10 & $+0.78$ & $+34$ \\
+3 & V7 $\to$ V9 & 1.79 & 2.00 & $+0.21$ & $+12$ \\
+4 & V9 $\to$ V2 & 0.58 & 0.65 & $+0.07$ & $+12$ \\
+5 & V2 $\to$ V3 & 1.18 & 1.10 & $-0.08$ & $-7$ \\
+6 & V3 $\to$ V4 & 1.31 & 1.70 & $+0.39$ & $+30$ \\
+7 & V4 $\to$ V5 & 0.54 & 0.70 & $+0.16$ & $+30$ \\
+8 & V5 $\to$ V6 & 0.74 & 0.45 & $-0.29$ & $-39$ \\
+9 & V6 $\to$ V8 & 1.65 & 1.60 & $-0.05$ & $-3$ \\
+10 & V8 $\to$ V0 & 2.62 & 2.40 & $-0.22$ & $-8$ \\
+\midrule
+ & \textbf{Total} & \textbf{13.82} & \textbf{14.40} & $+0.58$ & $+4.2$ \\
+\bottomrule
+\end{tabular}
+\end{table}

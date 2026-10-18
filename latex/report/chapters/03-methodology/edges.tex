@@ -1,6 +1,9 @@
 \subsection{Edges and Weights}\label{sec:edges}
 \paragraph{Edges.} An edge $\{u, v\}$ represents driving from location $u$ to location $v$ along the
-shortest road route between them. Every location can be reached from every other, so $G$ is the
+road distance reported by the OSRM Table service~\cite{osrmapi}, using its driving profile and the
+OpenStreetMap road network. This is the length of the route OSRM selects as fastest between the ordered
+pair; it is not a separately optimized minimum-distance route.
+Every location can be reached from every other, so $G$ is the
 \textbf{complete graph} $K_{\NumVertices}$ with $\binom{\NumVertices}{2} = \NumEdges$ edges. An edge stands
 for a whole road route, which may pass other locations without stopping; it is not a single street.
 
