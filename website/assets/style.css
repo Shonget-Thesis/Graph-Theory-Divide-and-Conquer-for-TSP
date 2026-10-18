@@ -404,10 +404,10 @@ tbody tr.is-clickable:hover, tbody tr.is-sel { background: var(--accent-soft); }
 .player { display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: 0; border: 1px solid var(--line); border-radius: 14px; overflow: hidden; background: var(--bg); }
 .player .map { border: 0; border-radius: 0; height: clamp(500px, 76vh, 780px); }
 .player__side {
-  border-left: 1px solid var(--line); display: grid; min-height: 0; height: clamp(500px, 76vh, 780px);
-  grid-template-rows: auto auto minmax(0, 1.5fr) minmax(0, 1fr) auto;
+  border-left: 1px solid var(--line); display: grid; min-height: 0; min-width: 0; height: clamp(500px, 76vh, 780px);
+  grid-template-rows: auto auto minmax(0, 1.5fr) minmax(0, 1fr) auto; grid-template-columns: minmax(0, 1fr);
 }
-.player__bar { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 10px 12px; border-bottom: 1px solid var(--line); }
+.player__bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; padding: 10px 12px; border-bottom: 1px solid var(--line); }
 .player__seed { display: flex; align-items: center; gap: 6px; }
 .player__seed select, .player__seed input {
   height: 32px; border: 1px solid var(--line-strong); border-radius: 8px; background: var(--bg); color: var(--ink);
@@ -436,6 +436,57 @@ tbody tr.is-clickable:hover, tbody tr.is-sel { background: var(--accent-soft); }
 .player__progress { height: 2px; background: var(--line); position: relative; }
 .player__progress span { position: absolute; inset: 0 auto 0 0; background: var(--accent); transition: width .3s var(--ease-out); }
 .player__foot { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-top: 12px; }
+
+/* ---------- simple-graph player (04.1) ---------- */
+.player--graph .player__side, .player--graph .gstage { height: clamp(440px, 64vh, 640px); }
+.gstage {
+  position: relative; overflow: hidden; background:
+    linear-gradient(var(--line) 1px, transparent 1px) 0 0 / 5% 8%,
+    linear-gradient(90deg, var(--line) 1px, transparent 1px) 0 0 / 5% 8%, var(--bg);
+}
+.gstage svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.gstage .map__badge { z-index: 2; }
+.g-k10 line { stroke: var(--line-strong); stroke-width: 1px; vector-effect: non-scaling-stroke; }
+.g-k10 { opacity: .12; transition: opacity .5s; }
+.gstage.is-k10 .g-k10 { opacity: .7; }
+.g-e { fill: none; stroke-linecap: round; vector-effect: non-scaling-stroke; transition: opacity .3s; }
+.g-e--ink { stroke: var(--ink); stroke-width: 2px; opacity: .85; }
+.g-e--faint { stroke: var(--muted); stroke-width: 1.6px; opacity: .45; }
+.g-e--L { stroke: var(--accent); stroke-width: 2.6px; }
+.g-e--R { stroke: var(--muted); stroke-width: 2.6px; }
+.g-e--route { stroke: var(--accent); stroke-width: 2.8px; }
+.g-e--add { stroke: var(--gold); stroke-width: 3.4px; }
+.g-e--bridge { stroke: var(--gold); stroke-width: 5px; }
+.g-e--del { stroke: var(--danger); stroke-width: 2.4px; stroke-dasharray: 6 5; }
+.g-e--draw { stroke-dasharray: var(--len) var(--len); stroke-dashoffset: var(--len); animation: g-draw .8s var(--ease-out) forwards; }
+@keyframes g-draw { to { stroke-dashoffset: 0; } }
+.g-cut { stroke: var(--accent); stroke-width: 1.6px; stroke-dasharray: 8 5; vector-effect: non-scaling-stroke; }
+.g-cut--old { stroke: var(--muted); stroke-width: 1px; stroke-dasharray: 3 5; }
+.g-lbl rect { fill: var(--bg); stroke: var(--line-strong); stroke-width: 1px; vector-effect: non-scaling-stroke; }
+.g-lbl text { font-family: var(--font-mono); font-weight: 600; fill: var(--ink); text-anchor: middle; dominant-baseline: central; }
+.g-lbl--gold rect { fill: color-mix(in srgb, var(--gold) 22%, var(--bg)); stroke: var(--gold); }
+.g-lbl--red rect { stroke: var(--danger); } .g-lbl--red text { fill: var(--danger); }
+.g-lbl--accent rect { stroke: var(--accent); } .g-lbl--accent text { fill: var(--accent-text); }
+.g-lbl--cut text { fill: var(--accent-text); } .g-lbl--cut rect { stroke: var(--accent); }
+.g-lbl--cutold text { fill: var(--muted); }
+.g-lbl--leg circle { fill: var(--bg); stroke: var(--accent); stroke-width: 1.5px; vector-effect: non-scaling-stroke; }
+.g-lbl--leg text { fill: var(--accent-text); }
+.g-pop { animation: g-pop .45s var(--ease-out) both; }
+@keyframes g-pop { from { opacity: 0; transform: scale(.6); } }
+.g-fade { animation: g-fade .5s .35s var(--ease-out) both; }
+@keyframes g-fade { from { opacity: 0; } }
+.g-v circle { fill: var(--bg); stroke: var(--ink); stroke-width: 1.6px; vector-effect: non-scaling-stroke; transition: fill .35s, stroke .35s, opacity .35s; }
+.g-v text { font-family: var(--font-mono); font-weight: 600; fill: var(--ink); text-anchor: middle; dominant-baseline: central; pointer-events: none; transition: fill .35s; }
+.g-v { transition: opacity .35s; cursor: default; }
+.g-v.is-start circle { fill: var(--ink); } .g-v.is-start text { fill: var(--bg); }
+.g-v.is-L circle { fill: var(--accent); stroke: var(--accent); } .g-v.is-L text { fill: var(--accent-ink); }
+.g-v.is-R circle { fill: var(--muted); stroke: var(--muted); } .g-v.is-R text { fill: var(--bg); }
+.g-v.is-dim { opacity: .3; }
+.g-ring { fill: none; stroke: var(--accent); stroke-width: 2px; stroke-dasharray: 4 3; vector-effect: non-scaling-stroke; }
+.g-arrow { fill: var(--accent); } .g-arrow--gold { fill: var(--gold); } .g-arrow--ink { fill: var(--ink); }
+.g-arrow--muted { fill: var(--muted); } .g-arrow--red { fill: var(--danger); }
+.gdot { display: inline-block; width: 12px; height: 12px; border-radius: 50%; }
+.gdot--L { background: var(--accent); } .gdot--R { background: var(--muted); }
 
 /* ---------- code + terminal ---------- */
 .codebox { border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: var(--bg); }
@@ -567,6 +618,8 @@ kbd { font: 500 .72rem var(--font-mono); border: 1px solid var(--line-strong); b
   .player .map { height: 58vh; min-height: 360px; }
   .player__side { border-left: 0; border-top: 1px solid var(--line); height: auto; display: flex; flex-direction: column; }
   .player__info { max-height: none; }
+  .player--graph .player__side { height: auto; }
+  .player--graph .gstage { height: auto; aspect-ratio: 16 / 10.5; }
   .player__list { max-height: 280px; }
   .site-footer__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }

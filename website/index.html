@@ -435,30 +435,69 @@
     <div class="page-hero__sub"><p class="lead">The recorded run of <code>dc_tsp.py</code>, replayed on the map. Every edge is drawn along the street route behind its weight.</p><span class="note page-hero__time">suggested time · 3–4 min · includes the live recording</span></div>
   </div>
 
-  <div class="wrap section" id="implementation-player" style="padding-top:clamp(40px,5vw,72px)">
-    <div class="section-head"><span class="note note--ink">[04.1] Road-snapped step player</span><span class="note">← → keys · space to play · data: code/main.py --export-web</span></div>
-    <div class="player reveal" id="player">
-      <div class="map" id="map-player"><div class="map__badge"><span class="note note--ink" id="player-badge"></span><span class="note" id="player-sub"></span></div></div>
-      <aside class="player__side" aria-label="Algorithm steps">
+  <div class="wrap section" id="implementation-graph" style="padding-top:clamp(40px,5vw,72px)">
+    <div class="section-head"><span class="note note--ink">[04.1] Step player on the simple graph</span><span class="note">← → keys · space to play · same recorded run as 04.2</span></div>
+    <p class="lead reveal" style="max-width:62ch;margin-bottom:28px">The same steps, drawn on the abstract graph first: each location is a vertex at its map position, each edge a straight arrow labelled with its weight. Once the idea is clear, follow the same run on the actual roads below.</p>
+    <div class="player player--graph reveal" data-player="graph">
+      <div class="gstage" data-r="stage" role="img" aria-label="The current algorithm step drawn on the simple graph">
+        <div class="map__badge"><span class="note note--ink" data-r="badge"></span><span class="note" data-r="sub"></span></div>
+      </div>
+      <aside class="player__side" aria-label="Algorithm steps on the simple graph">
         <div class="player__bar">
-          <label class="player__seed note" for="seed-select">seed
-            <select id="seed-select" aria-label="Random seed"></select>
-          </label>
-          <span class="note" id="seed-total"></span>
+          <label class="player__seed note">seed <select data-r="seed" aria-label="Random seed"></select></label>
+          <button class="btn btn--ghost btn--sm" type="button" data-a="sync" title="Show this step on the roads (04.2)">On the roads ↓</button>
         </div>
-        <div class="player__progress"><span id="player-progress"></span></div>
+        <div class="player__progress"><span data-r="progress"></span></div>
         <div class="player__info" aria-live="polite">
-          <div class="player__kind"><span class="note note--accent" id="player-kind"></span><span class="note" id="player-count"></span></div>
-          <div class="player__title" id="player-title"></div>
-          <div class="player__body" id="player-body"></div>
+          <div class="player__kind"><span class="note note--accent" data-r="kind"></span><span class="note" data-r="count"></span></div>
+          <div class="player__title" data-r="title"></div>
+          <div class="player__body" data-r="body"></div>
         </div>
-        <ol class="player__list" id="player-list"></ol>
+        <ol class="player__list" data-r="list"></ol>
         <div class="player__ctrl">
-          <button class="tool" type="button" id="pl-first" aria-label="First step" title="First">⇤</button>
-          <button class="tool" type="button" id="pl-prev" aria-label="Previous step" title="Previous (←)">←</button>
-          <button class="btn btn--sm grow" type="button" id="pl-play" style="justify-content:center">▶ Play</button>
-          <button class="tool" type="button" id="pl-next" aria-label="Next step" title="Next (→)">→</button>
-          <button class="tool" type="button" id="pl-last" aria-label="Last step" title="Last">⇥</button>
+          <button class="tool" type="button" data-a="first" aria-label="First step" title="First">⇤</button>
+          <button class="tool" type="button" data-a="prev" aria-label="Previous step" title="Previous (←)">←</button>
+          <button class="btn btn--sm grow" type="button" data-a="play" style="justify-content:center">▶ Play</button>
+          <button class="tool" type="button" data-a="next" aria-label="Next step" title="Next (→)">→</button>
+          <button class="tool" type="button" data-a="last" aria-label="Last step" title="Last">⇥</button>
+        </div>
+      </aside>
+    </div>
+    <div class="player__foot">
+      <div class="legend">
+        <span class="legend__i"><i class="gdot gdot--L"></i>left half / T₁</span>
+        <span class="legend__i"><i class="gdot gdot--R"></i>right half / T₂</span>
+        <span class="legend__i"><i class="swatch-line swatch-line--gold"></i>added edge / bridge</span>
+        <span class="legend__i"><i class="swatch-line swatch-line--red"></i>removed edge</span>
+        <span class="legend__i"><i class="swatch-line swatch-line--muted"></i>other sub-tours</span>
+        <span class="legend__i"><i class="swatch-line swatch-line--dash"></i>median cut</span>
+      </div>
+      <span class="note">Vertices at their latitude/longitude. A straight arrow stands for a whole road route; its label is the weight w(u,v) in km. A two-city tour a → b → a is drawn as two curved arrows.</span>
+    </div>
+  </div>
+
+  <div class="wrap section" id="implementation-player">
+    <div class="section-head"><span class="note note--ink">[04.2] Road-snapped step player</span><span class="note">← → keys · space to play · data: code/main.py --export-web</span></div>
+    <div class="player reveal" data-player="road" id="player">
+      <div class="map" data-r="stage"><div class="map__badge"><span class="note note--ink" data-r="badge"></span><span class="note" data-r="sub"></span></div></div>
+      <aside class="player__side" aria-label="Algorithm steps on the roads">
+        <div class="player__bar">
+          <label class="player__seed note">seed <select data-r="seed" aria-label="Random seed"></select></label>
+          <span class="note" data-r="seedTotal"></span>
+        </div>
+        <div class="player__progress"><span data-r="progress"></span></div>
+        <div class="player__info" aria-live="polite">
+          <div class="player__kind"><span class="note note--accent" data-r="kind"></span><span class="note" data-r="count"></span></div>
+          <div class="player__title" data-r="title"></div>
+          <div class="player__body" data-r="body"></div>
+        </div>
+        <ol class="player__list" data-r="list"></ol>
+        <div class="player__ctrl">
+          <button class="tool" type="button" data-a="first" aria-label="First step" title="First">⇤</button>
+          <button class="tool" type="button" data-a="prev" aria-label="Previous step" title="Previous (←)">←</button>
+          <button class="btn btn--sm grow" type="button" data-a="play" style="justify-content:center">▶ Play</button>
+          <button class="tool" type="button" data-a="next" aria-label="Next step" title="Next (→)">→</button>
+          <button class="tool" type="button" data-a="last" aria-label="Last step" title="Last">⇥</button>
         </div>
       </aside>
     </div>
@@ -476,7 +515,7 @@
   </div>
 
   <div class="wrap section" id="implementation-code">
-    <div class="section-head"><span class="note note--ink">[04.2] Main code components</span><span class="note">Python 3 · standard library · matplotlib for figures only</span></div>
+    <div class="section-head"><span class="note note--ink">[04.3] Main code components</span><span class="note">Python 3 · standard library · matplotlib for figures only</span></div>
     <div class="grid-12">
       <div class="span-5 reveal">
         <div class="table-wrap"><table>
@@ -501,7 +540,7 @@
   </div>
 
   <div class="wrap section" id="implementation-demo">
-    <div class="section-head"><span class="note note--ink">[04.3] Live demo</span><span class="note">the screen recording shows this run</span></div>
+    <div class="section-head"><span class="note note--ink">[04.4] Live demo</span><span class="note">the screen recording shows this run</span></div>
     <div class="grid-12">
       <div class="span-4 reveal stack">
         <h2 class="section-title" style="font-size:var(--step-2)">python main.py</h2>
@@ -526,10 +565,10 @@
   </div>
 
   <div class="wrap section" id="implementation-route">
-    <div class="section-head"><span class="note note--ink">[04.4] Resulting route</span><span class="note">seed <span data-k="seed"></span> · <span data-k="total"></span> km</span></div>
+    <div class="section-head"><span class="note note--ink">[04.5] Resulting route</span><span class="note">seed <span data-k="seed"></span> · <span data-k="total"></span> km</span></div>
     <p class="lead reveal" style="max-width:none;margin-bottom:24px"><span class="mono" data-k="route"></span></p>
     <div class="grid-12">
-      <div class="span-7 reveal"><div class="map" id="map-route"><div class="map__badge"><span class="note note--ink">fig. 04.4 · route on the roads · numbers = leg order</span></div></div></div>
+      <div class="span-7 reveal"><div class="map" id="map-route"><div class="map__badge"><span class="note note--ink">fig. 04.5 · route on the roads · numbers = leg order</span></div></div></div>
       <div class="span-5 reveal">
         <div class="table-wrap"><table id="tbl-legs"><thead><tr><th>Leg</th><th>From</th><th>To</th><th class="r">km</th><th class="r">Cum.</th></tr></thead><tbody></tbody></table></div>
         <p class="note" style="margin-top:10px">Click a leg to zoom to its road.</p>
@@ -538,7 +577,7 @@
   </div>
 
   <div class="wrap section" id="implementation-verify">
-    <div class="section-head"><span class="note note--ink">[04.5] Verification: recomputing the total</span><span class="note">verify.check_route</span></div>
+    <div class="section-head"><span class="note note--ink">[04.6] Verification: recomputing the total</span><span class="note">verify.check_route</span></div>
     <div class="grid-12">
       <div class="span-6 reveal"><ul class="chips" id="checks" style="list-style:none;padding:0;flex-direction:column;align-items:flex-start;gap:10px"></ul></div>
       <div class="span-6 reveal">

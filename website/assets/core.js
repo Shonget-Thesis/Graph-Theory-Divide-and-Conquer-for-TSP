@@ -231,7 +231,7 @@
       });
     });
     p.trace.filter(function (e) { return e.step === "merge"; }).forEach(function (m) {
-      cmds.push({ label: "Player: jump to merge " + m.name, hint: "04.1", run: function () { DC.player && DC.player.jump(m.name); } });
+      cmds.push({ label: "Player: jump to merge " + m.name, hint: "04", run: function () { DC.player && DC.player.jump(m.name); } });
     });
     cmds.push({ label: "Toggle dark / light theme", hint: "theme", run: DC.toggleTheme });
     cmds.push({ label: "Toggle 12-column grid", hint: "Alt G", run: toggleGrid });
@@ -242,7 +242,7 @@
     var n = /^\d{1,3}$/.test(q) ? +q : (/^seed\s*(\d{1,3})$/.exec(q) || [])[1];
     if (n != null && +n < RUN.seeds.length) {
       var s = RUN.seeds[+n];
-      shown.unshift({ label: "Player: replay seed " + n + " (" + fmt(s.total) + " km" + (s.optimal ? ", optimal" : "") + ")", hint: "04.1", run: function () { DC.player && DC.player.setSeed(+n, true); } });
+      shown.unshift({ label: "Player: replay seed " + n + " (" + fmt(s.total) + " km" + (s.optimal ? ", optimal" : "") + ")", hint: "04", run: function () { DC.player && DC.player.setSeed(+n, true); } });
     }
     sel = Math.min(sel, Math.max(0, shown.length - 1));
     $("#palette-list").innerHTML = shown.map(function (c, i) {
