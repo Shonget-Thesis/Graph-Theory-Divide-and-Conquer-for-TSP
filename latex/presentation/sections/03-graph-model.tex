@@ -9,7 +9,6 @@
   \medskip
   \raggedright\footnotesize
   Coordinates: OpenStreetMap / Nominatim~\cite{osm}, located on Google Maps~\cite{googlemaps}.
-  \groupnote{Show Google Maps screenshot}
 \end{frame}
 
 \begin{frame}{The Weighted Graph $G = K_{\NumVertices}$}
@@ -17,7 +16,7 @@
   \includegraphics[height=0.78\textheight]{graph.pdf}
 
   \footnotesize Complete graph: \NumEdges{} edges, one for each pair of locations; each edge is the
-  shortest driving route between them.
+  driving route OSRM returns between them (it may pass other stops without visiting them).
 \end{frame}
 
 \begin{frame}{Edges, Direction and Weights}
@@ -32,10 +31,51 @@
       \footnotesize
       \textbf{Undirected:} one-way streets make raw distances differ slightly, so
       \[ w(u,v) = \tfrac12\bigl(d(u{\to}v) + d(v{\to}u)\bigr) \]
-      \textbf{Actual data:} locations; road distances from OSRM on the OpenStreetMap road
-      network~\cite{luxen2011osrm}.
+      \textbf{Actual data:} locations; road distances from the OSRM Table service~\cite{osrmapi}
+      on the OpenStreetMap road network~\cite{luxen2011osrm}.
 
       \textbf{Assumed:} symmetric averaging; no traffic or time windows; choice of stops.
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Cross-Check with Google Maps}
+  \begin{columns}[T]
+    \begin{column}{0.55\textwidth}
+      \centering
+      \scriptsize
+      \setlength{\tabcolsep}{4pt}
+      \begin{tabular}{c l r r r}
+        \toprule
+        \textbf{Leg} & \textbf{From $\to$ To} & \textbf{Matrix} & \textbf{Google} & \textbf{\%} \\
+        \midrule
+        1 & V0 $\to$ V1 & 1.09 & 0.70 & $-36$ \\
+        2 & V1 $\to$ V7 & 2.32 & 3.10 & $+34$ \\
+        3 & V7 $\to$ V9 & 1.79 & 2.00 & $+12$ \\
+        4 & V9 $\to$ V2 & 0.58 & 0.65 & $+12$ \\
+        5 & V2 $\to$ V3 & 1.18 & 1.10 & $-7$ \\
+        6 & V3 $\to$ V4 & 1.31 & 1.70 & $+30$ \\
+        7 & V4 $\to$ V5 & 0.54 & 0.70 & $+30$ \\
+        8 & V5 $\to$ V6 & 0.74 & 0.45 & $-39$ \\
+        9 & V6 $\to$ V8 & 1.65 & 1.60 & $-3$ \\
+        10 & V8 $\to$ V0 & 2.62 & 2.40 & $-8$ \\
+        \midrule
+        & \textbf{Total} & \textbf{13.82} & \textbf{14.40} & $+4.2$ \\
+        \bottomrule
+      \end{tabular}
+    \end{column}
+    \begin{column}{0.42\textwidth}
+      \footnotesize
+      Each leg of our route searched separately on Google Maps~\cite{googlemaps} in driving mode.
+      \medskip
+
+      \textbf{Whole tour:} within \textbf{4.2\%}.
+
+      \textbf{Single legs:} differ by up to 39\% (pin positions, one-way streets, different road
+      choices and turn restrictions).
+      \medskip
+
+      We keep the OSRM matrix: it is reproducible and read directly by the program.
     \end{column}
   \end{columns}
 \end{frame}

@@ -3,6 +3,7 @@
 Run:   python main.py                 (default seed and merge rule)
        python main.py --seed 7 --rule best
        python main.py --export-latex  (also refresh the tables/figures used by the LaTeX report)
+       python main.py --export-web    (also refresh website/data/run.json)
 
 Input data (see data/):
   locations.csv          vertices: name, coordinates (lat, lon)
@@ -10,7 +11,9 @@ Input data (see data/):
 """
 import argparse
 import csv
+import io
 import statistics
+import sys
 import time
 from pathlib import Path
 
@@ -48,6 +51,20 @@ def load_matrix(path=DATA / "distance_matrix_km.csv"):
 # ----------------------------------------------------------------------------
 # Console output
 # ----------------------------------------------------------------------------
+class Tee(io.TextIOBase):
+    """Print as usual and keep a copy (the website replays the console output of the run)."""
+
+    def __init__(self, stream):
+        self.stream, self.copy = stream, io.StringIO()
+
+    def write(self, text):
+        self.copy.write(text)
+        return self.stream.write(text)
+
+    def flush(self):
+        self.stream.flush()
+
+
 def heading(text):
     print(f"\n{'=' * 78}\n{text}\n{'=' * 78}")
 
@@ -140,7 +157,10 @@ def main():
     parser.add_argument("--runs", type=int, default=100, help="repeated runs for the summary table")
     parser.add_argument("--no-plot", action="store_true", help="skip the matplotlib figures")
     parser.add_argument("--export-latex", action="store_true", help="write tables/figures for the LaTeX documents")
+    parser.add_argument("--export-web", action="store_true", help="write website/data/run.json for the website")
     args = parser.parse_args()
+    if args.export_web:
+        sys.stdout = Tee(sys.stdout)
 
     locations = load_locations()
     dist = load_matrix()
@@ -192,6 +212,11 @@ def main():
     if args.export_latex:
         from export_latex import export
         export(locations, coords, dist, result, args, checks, recomputed, opt_route, optimum, stats)
+
+    if args.export_web:
+        from export_web import export as export_web
+        console = sys.stdout.copy.getvalue()
+        export_web(locations, coords, dist, result, args, checks, recomputed, opt_route, optimum, stats, console)
 
 
 if __name__ == "__main__":
