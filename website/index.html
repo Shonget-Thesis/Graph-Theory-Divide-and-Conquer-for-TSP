@@ -1,0 +1,722 @@
+<!doctype html>
+<html lang="en" data-preloaded="pending">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Divide &amp; Conquer TSP</title>
+<meta name="description" content="Algorithm 2.8 (Divide and Conquer) for the Traveling Salesperson Problem, applied to a one-day city tour of downtown Cagayan de Oro, step by step on the real roads.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230e0e0d'/%3E%3Cpath d='M8 22 L13 9 L19 16 L24 10 L22 23 Z' fill='none' stroke='%232f5bff' stroke-width='2.4' stroke-linejoin='round'/%3E%3Ccircle cx='8' cy='22' r='2.6' fill='%23f4f4f0'/%3E%3C/svg%3E">
+<script>
+  // theme + one-time preloader, before first paint (storage can throw in private windows)
+  (function () {
+    var read = function (s, k) { try { return window[s].getItem(k); } catch (e) { return null; } };
+    var root = document.documentElement;
+    var theme = read("localStorage", "dc-theme");
+    if (theme === "light" || theme === "dark") root.dataset.theme = theme;
+    root.classList.add("js");
+    if (read("sessionStorage", "dc-preloaded") || matchMedia("(prefers-reduced-motion: reduce)").matches) root.dataset.preloaded = "yes";
+  })();
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@300..700&family=Geist+Mono:wght@400..600&display=swap">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<a class="skip note" href="#main">Skip to content</a>
+
+<!-- preloader: plots the presented route once per session -->
+<div class="preloader" id="preloader" aria-hidden="true">
+  <div class="preloader__meta"><span class="note">Plotting <span class="note--ink">K<sub>10</sub></span> · 45 edges</span><span class="note">rev. 2026</span></div>
+  <svg class="preloader__art" id="preloader-art" viewBox="0 0 100 100"></svg>
+  <div class="preloader__meta"><span class="note">Divide · Conquer · Combine</span><span class="preloader__count" id="preloader-count">00</span></div>
+</div>
+
+<header class="site-header">
+  <div class="wrap site-header__bar">
+    <a class="brand" href="#/" aria-label="Divide and Conquer TSP, home">
+      <svg class="brand__mark" viewBox="0 0 30 30" aria-hidden="true">
+        <rect class="m-ring" x="1" y="1" width="28" height="28" rx="7"/>
+        <path class="m-path" d="M7 21 L12 8 L17.5 15 L23 9 L21 22 Z"/>
+        <circle class="m-dot" cx="7" cy="21" r="2.4"/>
+      </svg>
+      <span class="brand__name">Divide &amp; Conquer<span class="brand__role"> / TSP · CDO</span></span>
+    </a>
+    <nav class="nav" aria-label="Presentation outline">
+      <a class="nav__link" href="#/problem" data-nav="problem"><span class="note">01</span><span class="nav__label">Problem</span></a>
+      <a class="nav__link" href="#/algorithm" data-nav="algorithm"><span class="note">02</span><span class="nav__label">Algorithm</span></a>
+      <a class="nav__link" href="#/graph" data-nav="graph"><span class="note">03</span><span class="nav__label">Graph model</span></a>
+      <a class="nav__link" href="#/implementation" data-nav="implementation"><span class="note">04</span><span class="nav__label">Implementation</span></a>
+      <a class="nav__link" href="#/conclusion" data-nav="conclusion"><span class="note">05</span><span class="nav__label">Conclusion</span></a>
+      <a class="nav__link" href="#/references" data-nav="references"><span class="note">06</span><span class="nav__label">References</span></a>
+    </nav>
+    <div class="tools">
+      <button class="tool" id="theme-toggle" type="button" aria-label="Toggle light or dark theme" title="Theme">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="8" cy="8" r="6"/><path d="M8 2a6 6 0 0 0 0 12z" fill="currentColor"/></svg>
+      </button>
+      <button class="tool tool--kbd note note--ink" id="palette-open" type="button" aria-label="Open command menu" title="Command menu (Ctrl/⌘ K)"><span id="kbd-mod">⌘</span>K</button>
+      <button class="tool tool--menu note note--ink" id="menu-toggle" type="button" aria-expanded="false" aria-controls="sheet">Menu</button>
+      <a class="btn header-cta" href="#/implementation/player">Run the prototype <span class="arrow">→</span></a>
+    </div>
+  </div>
+  <div class="hd-rule"><div class="hd-rule__fill" id="progress"></div><span class="hd-rule__tag note" id="progress-tag">00 · Home</span></div>
+</header>
+<div class="sheet" id="sheet">
+  <a href="#/problem"><span class="note">01</span>Problem &amp; objective</a>
+  <a href="#/algorithm"><span class="note">02</span>The algorithm</a>
+  <a href="#/graph"><span class="note">03</span>Graph model &amp; data</a>
+  <a href="#/implementation"><span class="note">04</span>Implementation</a>
+  <a href="#/conclusion"><span class="note">05</span>Conclusion</a>
+  <a href="#/references"><span class="note">06</span>References</a>
+</div>
+
+<main id="main">
+
+<!-- =============================== 00 HOME =============================== -->
+<section class="page" data-page="home" data-title="00 · Home">
+  <div class="wrap hero">
+    <div class="hero__top">
+      <span class="note note--ink">CS414 Graph Theory · Performance Innovative Task · Algorithm 2.8</span>
+      <span class="note">Base · V0 USTP · <span data-k="v0coords"></span></span>
+    </div>
+    <div class="hero__grid">
+      <div>
+        <h1 class="sr-only">Divide and Conquer for the Traveling Salesperson Problem: a one-day city tour of downtown Cagayan de Oro</h1>
+        <div aria-hidden="true">
+          <div class="wf-row"><div class="wf-line"><span class="outline-text">Divide.</span><span class="wf-solid"><span class="wf-solid__inner">Divide.</span></span></div><span class="wf-dim note">↤ median cut ↦</span></div>
+          <div class="wf-row"><div class="wf-line"><span class="outline-text">Conquer.</span><span class="wf-solid"><span class="wf-solid__inner">Conquer.</span></span></div><span class="wf-dim note">T(n) = 2T(n/2) + O(n²)</span></div>
+          <div class="wf-row"><div class="wf-line"><span class="outline-text">Back to V0.</span><span class="wf-solid"><span class="wf-solid__inner">Back to <span class="accent">V0.</span></span></span></div><span class="wf-dim note">L(T) = <span data-k="total"></span> km</span></div>
+        </div>
+        <p class="hero__machine">The Divide and Conquer heuristic for the Traveling Salesperson Problem, applied to a one-day guest tour of downtown Cagayan de Oro, on the real roads.</p>
+        <div class="hero__notes">
+          <span class="note"><span class="note--accent">●</span> <span data-k="n"></span> vertices · complete graph K<sub>10</sub> · <span data-k="edges"></span> edges · km</span>
+          <span class="note"><span class="note--accent">◆</span> seed <span data-k="seed"></span> · <span data-k="total"></span> km · all checks <span data-k="checks"></span></span>
+          <span class="note"><span class="note--accent">▲</span> probe · point at the graph to see a vertex's nine edges</span>
+        </div>
+        <div class="hero__ctas">
+          <a class="btn" href="#/implementation/player">Step through it on the map <span class="arrow">→</span></a>
+          <a class="btn btn--ghost" href="#/problem">Start the presentation</a>
+        </div>
+      </div>
+      <div class="probe" id="probe" role="img" aria-label="Interactive drawing of the complete graph on the ten locations. Pointing at a vertex shows its nine edge weights.">
+        <div class="probe__hdr"><span class="note">fig. 00 · K<sub>10</sub></span><span class="note" id="probe-name"></span></div>
+        <svg id="probe-svg" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet"></svg>
+        <div class="probe__cap"><span class="note">straight lines = abstract edges</span><span class="note note--accent" id="probe-sum"></span></div>
+      </div>
+    </div>
+    <div class="stats reveal">
+      <div class="stat"><span class="note">Route · seed <span data-k="seed"></span></span><div class="stat__v" data-count="total" data-d="2">0<small>km</small></div><span class="note">Divide &amp; Conquer</span></div>
+      <div class="stat"><span class="note">Optimum</span><div class="stat__v" data-count="opt" data-d="2">0<small>km</small></div><span class="note">Held–Karp, comparison only</span></div>
+      <div class="stat"><span class="note">Gap</span><div class="stat__v" data-count="gap" data-d="2" data-suffix="%">0</div><span class="note">approximate, not optimal</span></div>
+      <div class="stat"><span class="note">Optimal runs</span><div class="stat__v"><span data-count="bridgeHits" data-d="0">0</span><small>/ <span data-k="runs"></span></small></div><span class="note">paper's merge rule</span></div>
+      <div class="stat"><span class="note">Running time</span><div class="stat__v">O(n²)</div><span class="note">&lt; 1 ms per run here</span></div>
+    </div>
+  </div>
+
+  <div class="wrap section">
+    <div class="section-head"><span class="note note--ink">[00] Outline</span><span class="note">10–15 min video · tabs follow the slides</span></div>
+    <div class="outline-cards">
+      <a class="ocard reveal" href="#/problem"><div class="ocard__n"><span class="note note--accent">01</span><span class="note">2–3 min</span></div><div class="ocard__t">Problem and objective</div><p class="ocard__d">What the TSP asks, and our USTP guest tour through nine downtown landmarks. Minimise driving km.</p><span class="ocard__go">Open <span class="arrow">→</span></span></a>
+      <a class="ocard reveal" href="#/algorithm"><div class="ocard__n"><span class="note note--accent">02</span><span class="note">2–3 min</span></div><div class="ocard__t">The Divide and Conquer algorithm</div><p class="ocard__d">Shuffle, median split, base cases, shortest-bridge merge, and the fix to the paper's merge code.</p><span class="ocard__go">Open <span class="arrow">→</span></span></a>
+      <a class="ocard reveal" href="#/graph"><div class="ocard__n"><span class="note note--accent">03</span><span class="note">2–3 min</span></div><div class="ocard__t">Graph model and data</div><p class="ocard__d">Ten vertices, K<sub>10</sub> with road-distance weights, actual vs. assumed data, the worked steps.</p><span class="ocard__go">Open <span class="arrow">→</span></span></a>
+      <a class="ocard reveal" href="#/implementation"><div class="ocard__n"><span class="note note--accent">04</span><span class="note">3–4 min</span></div><div class="ocard__t">Python implementation and results</div><p class="ocard__d">The prototype: every divide, base case and merge drawn on the actual streets, then the verified route.</p><span class="ocard__go">Open <span class="arrow">→</span></span></a>
+      <a class="ocard reveal" href="#/conclusion"><div class="ocard__n"><span class="note note--accent">05</span><span class="note">1–2 min</span></div><div class="ocard__t">Conclusion</div><p class="ocard__d">Interpretation, the exact optimum for comparison, <span data-k="runs"></span> seeds, limitations and improvements.</p><span class="ocard__go">Open <span class="arrow">→</span></span></a>
+      <a class="ocard reveal" href="#/references"><div class="ocard__n"><span class="note note--accent">06</span><span class="note">references</span></div><div class="ocard__t">References</div><p class="ocard__d">Sources for the algorithm, the code and the application data.</p><span class="ocard__go">Open <span class="arrow">→</span></span></a>
+    </div>
+  </div>
+
+  <div class="wrap section">
+    <div class="section-head"><span class="note note--ink">[00.1] Group</span><span class="note">October 18, 2026 · CS414 Graph Theory · Instructor: Dr. Penelyn L. Acal</span></div>
+    <div class="team reveal">
+      <div class="team__p"><div class="team__name">Heart Chiong</div><span class="note">Chiong, Heart G.</span></div>
+      <div class="team__p"><div class="team__name">Mark Vincent Limpahan</div><span class="note">Limpahan, Mark Vincent D.</span></div>
+      <div class="team__p"><div class="team__name">Roxanne Locsin</div><span class="note">Locsin, Roxanne M.</span></div>
+      <div class="team__p"><div class="team__name">Rhenel Jhon Sajol</div><span class="note">Sajol, Rhenel Jhon R.</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- =============================== 01 PROBLEM =============================== -->
+<section class="page" data-page="problem" data-title="01 · Problem">
+  <div class="wrap page-hero">
+    <div class="page-hero__top"><span class="note note--ink">[01] Problem and objective</span><span class="note">rubric · 10 pts</span></div>
+    <h1 class="page-hero__title">Visit every stop <span class="outline-text">once.</span><br>Come <span class="outline-text">back.</span></h1>
+    <div class="page-hero__sub"><p class="lead">A one-day city tour of downtown Cagayan de Oro that starts and ends at USTP, as a Traveling Salesperson Problem.</p><span class="note page-hero__time">suggested time · 2–3 min</span></div>
+  </div>
+
+  <div class="wrap section" id="problem-tsp">
+    <div class="section-head"><span class="note note--ink">[01.1] The Traveling Salesperson Problem</span><span class="note">minimum-weight Hamiltonian cycle</span></div>
+    <div class="grid-12">
+      <div class="span-7 reveal">
+        <h2 class="section-title">The shortest loop through every place.</h2>
+        <ul>
+          <li>Visit every required location <strong>exactly once</strong> and <strong>return to the start</strong>, at the smallest total cost.</li>
+          <li>In graph terms: in a weighted graph, find a <strong>Hamiltonian cycle of minimum total weight</strong>.</li>
+          <li>The decision version is NP-complete [5]. Exact methods blow up: brute force is <span class="mono">O(n!)</span> and Held–Karp dynamic programming is <span class="mono">O(n²2ⁿ)</span> [3].</li>
+          <li>That is why there are fast <strong>heuristics</strong>, which give up the guarantee of optimality for speed [6]. Ours is <strong>Divide and Conquer</strong>, Algorithm 2.8 of Luna-Garcia, Candano &amp; Caga-anan (2024) [1], one of the eight classical algorithms they compare.</li>
+        </ul>
+      </div>
+      <div class="span-5 reveal">
+        <div class="panel panel--raised">
+          <div class="panel__hdr"><span class="note">Growth of the exact methods</span><span class="note">n = 10</span></div>
+          <dl class="kv">
+            <dt>brute force</dt><dd><span class="mono">(n−1)!/2 = 181,440</span> distinct tours</dd>
+            <dt>Held–Karp</dt><dd><span class="mono">n²·2ⁿ ≈ 102,400</span> steps</dd>
+            <dt>D&amp;C</dt><dd><span class="mono">O(n²)</span>, well under a millisecond here</dd>
+          </dl>
+          <p class="note" style="margin-top:12px">At n = 10 the exact optimum is still cheap, so we compute it, but only to check our heuristic.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap section" id="problem-ours">
+    <div class="section-head"><span class="note note--ink">[01.2] Our real-life problem</span><span class="note">tourist itinerary · Cagayan de Oro City</span></div>
+    <div class="grid-12">
+      <div class="span-5 reveal stack">
+        <h2 class="section-title">A guest tour of downtown CDO.</h2>
+        <p><strong>Situation.</strong> The university hosts visiting guests (for example, delegates from a partner school) and takes them on a one-day city tour by service vehicle. The tour leaves the <strong><span data-k="startName"></span></strong>, stops once at each of nine landmarks in downtown Cagayan de Oro, and returns to the campus at the end of the day. The planners want the order of stops with the shortest total driving distance. That saves fuel and leaves more time at each stop.</p>
+        <p><strong>Area.</strong> Downtown Cagayan de Oro City, Misamis Oriental: the city centre and nearby barangays (Lapasan, Licoan, Burgos, Nazareth, Carmen and Macabalan), roughly 2.5 × 2.2 km.</p>
+        <p><strong>Start / end:</strong> V0, <span data-k="startName"></span>. <strong>Required stops:</strong> V1–V9.</p>
+      </div>
+      <div class="span-7 reveal">
+        <div class="map map--short" id="map-problem"><div class="map__badge"><span class="note note--ink">fig. 01.2 · the ten locations</span></div></div>
+        <div class="player__foot"><span class="note">Pins: OpenStreetMap / Nominatim coordinates · map © OpenStreetMap contributors</span></div>
+      </div>
+    </div>
+    <div class="three" style="margin-top:48px">
+      <div class="panel reveal">
+        <div class="panel__hdr"><span class="note note--ink">Objective</span><span class="note">minimise · km</span></div>
+        <p>Minimise the <strong>total travel distance in kilometres</strong>:</p>
+        <div class="tex-block" data-tex="\min_{\text{tours }T}\; L(T)=\sum_{k=0}^{n-1} w(v_k, v_{k+1}),\qquad v_0=v_n=\mathrm{V0}" data-display></div>
+        <p class="note">w(u,v) = road distance between u and v · n = <span data-k="n"></span></p>
+      </div>
+      <div class="panel reveal">
+        <div class="panel__hdr"><span class="note note--ink">Assumptions</span><span class="note">4</span></div>
+        <ol>
+          <li>Travel by car. Between two stops the driver follows the route OSRM's default fastest car profile returns on the public road network.</li>
+          <li>The distance is the same in both directions. Where one-way streets make the data differ, we average the two directions.</li>
+          <li>Traffic, opening hours, waiting and time at each stop are not modelled. They do not change the driving distance.</li>
+          <li>The vehicle has no capacity or fuel limit within one day.</li>
+        </ol>
+      </div>
+      <div class="panel reveal">
+        <div class="panel__hdr"><span class="note note--ink">Constraints</span><span class="note">2</span></div>
+        <ol>
+          <li>Start and end at <strong>V0</strong>.</li>
+          <li>Visit every one of V1–V9 <strong>exactly once</strong>.</li>
+        </ol>
+        <p class="callout">In graph terms the route must be a <strong>Hamiltonian cycle</strong> of the graph in 03.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- =============================== 02 ALGORITHM =============================== -->
+<section class="page" data-page="algorithm" data-title="02 · Algorithm">
+  <div class="wrap page-hero">
+    <div class="page-hero__top"><span class="note note--ink">[02] The Divide and Conquer algorithm</span><span class="note">rubric · 20 pts</span></div>
+    <h1 class="page-hero__title">Split the map.<br><span class="outline-text">Solve the halves.</span><br>Stitch.</h1>
+    <div class="page-hero__sub"><p class="lead">Algorithm 2.8 of Luna-Garcia et al. (2024) [1], with one correction to its merge step.</p><span class="note page-hero__time">suggested time · 2–3 min</span></div>
+  </div>
+
+  <div class="wrap section" id="algorithm-procedure">
+    <div class="section-head"><span class="note note--ink">[02.1] The procedure</span><span class="note">divide · conquer · combine [4]</span></div>
+    <p class="lead reveal" style="margin-bottom:40px">Divide the problem into smaller subproblems, solve each recursively (the smallest directly), and combine the sub-solutions. For the TSP, the locations are split geometrically, a short tour is built for each half, and the two tours are joined through the cheapest connection, the <em>bridge</em>. Partitioning the plane and joining local tours goes back to Karp [2].</p>
+    <ol class="steps reveal">
+      <li><span class="steps__n">Step 1</span><div class="steps__t">Shuffle</div><p>Randomise the order of the cities. Our split sorts by a deterministic coordinate-and-index key, so the shuffle does not change the splits. We keep it to follow the paper.</p></li>
+      <li><span class="steps__n">Step 2</span><div class="steps__t">Divide</div><p>Pick the <span class="mono">x</span> axis (longitude) or the <span class="mono">y</span> axis (latitude) at random, sort, and cut at the median. Halves have sizes ⌊m/2⌋ and ⌈m/2⌉. This axis choice is the randomness that changes the result.</p></li>
+      <li><span class="steps__n">Step 3</span><div class="steps__t">Base cases</div><p>1 city ⇒ length 0. 2 cities a, b ⇒ the tour a → b → a, of length 2·w(a,b), as in the paper.</p></li>
+      <li><span class="steps__n">Step 4</span><div class="steps__t">Conquer</div><p>Solve both halves recursively, giving the cycles T₁ and T₂.</p></li>
+      <li><span class="steps__n">Step 5</span><div class="steps__t">Combine</div><p>Find the <strong>shortest bridge</strong> (a, b), with a in T₁ and b in T₂, and join the two cycles through it.</p></li>
+      <li><span class="steps__n">Step 6</span><div class="steps__t">Adjust</div><p>Make sure no city repeats: the result must be one cycle through every city of the group exactly once.</p></li>
+    </ol>
+    <div class="grid-12" style="margin-top:48px">
+      <div class="span-6 panel reveal">
+        <div class="panel__hdr"><span class="note note--ink">Complexity</span><span class="note">Theorem 2.8</span></div>
+        <div class="tex-block" data-tex="T(n)=2\,T\!\left(\tfrac n2\right)+\underbrace{O(n^2)}_{\text{bridge search}}=O(n^2)" data-display></div>
+        <p>Sorting for the split costs <span class="mono">O(n log n)</span>. The bridge search compares all <span class="mono">n/2 · n/2</span> cross pairs, <span class="mono">O(n²)</span>. The loop over edge pairs of the two cycles skips most pairs, but is still <span class="mono">O(n²)</span> in the worst case. Building the merged list is <span class="mono">O(n)</span>. The merge cost halves at each level, so the total is a geometric series [4, 8].</p>
+      </div>
+      <div class="span-6 panel panel--raised reveal">
+        <div class="panel__hdr"><span class="note note--ink">Pseudocode</span><span class="note">Algorithm 2.8 restated</span></div>
+<pre class="mono" style="margin:0;font-size:.8rem;line-height:1.65;overflow-x:auto">DC-TSP(C):
+  if |C| ≤ 2: return base tour of C
+  axis ← random choice of {x, y}
+  L, R ← cut C at the median of axis
+  T₁ ← DC-TSP(L);  T₂ ← DC-TSP(R)
+  (a, b) ← shortest bridge, a ∈ T₁, b ∈ T₂
+  return MERGE(T₁, T₂, a, b)   ▷ each city once</pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap section" id="algorithm-merge">
+    <div class="section-head"><span class="note note--ink">[02.2] The merge step, and a fix to the paper's code</span><span class="note">Appendix 4.8 of [1]</span></div>
+    <div class="grid-12">
+      <div class="span-6 reveal stack">
+        <h2 class="section-title">The printed merge repeats cities.</h2>
+        <p>The paper's code joins two sub-tours as <code>tour1[:-1] + [a, b] + tour2</code>. That is not a valid tour, because <span class="mono">a</span> and <span class="mono">b</span> are already in <code>tour1</code> and <code>tour2</code>. The step "adjust so no city is repeated" never actually happens. Our preserved run of that expression on a seven-city subproblem:</p>
+        <pre class="calc" id="merge-bug-output"></pre>
+        <p class="note">code/original_merge_output.txt · returns 8 entries, repeats V5, does not close at its start</p>
+      </div>
+      <div class="span-6 reveal stack">
+        <h3 class="h3">Our merge keeps the shortest bridge</h3>
+        <ol>
+          <li>Find the shortest bridge <span class="mono">(a, b)</span> between T₁ and T₂.</li>
+          <li>Remove one edge <span class="mono">(a, a′)</span> of T₁ and one edge <span class="mono">(b, b′)</span> of T₂, both next to the bridge.</li>
+          <li>Add <span class="mono">(a, b)</span> and the closing edge <span class="mono">(a′, b′)</span>. Of all such options, keep the cheapest:</li>
+        </ol>
+        <div class="tex-block" data-tex="\Delta = w(a,b) + w(a',b') - w(a,a') - w(b,b')" data-display></div>
+        <div class="tex-block" data-tex="L(T) = L(T_1)+L(T_2)+\Delta" data-display style="padding-top:0"></div>
+        <div class="panel mdiag" id="mdiag">
+          <div class="panel__hdr"><span class="note">fig. 02.2 · two cycles become one</span><button class="btn btn--ghost btn--sm" type="button" id="mdiag-btn">Merge →</button></div>
+          <svg viewBox="0 0 360 170" role="img" aria-label="Two cycles. The dashed red edges a–a′ and b–b′ are removed, and the gold edges a–b (the bridge) and a′–b′ are added, giving one cycle.">
+            <line class="e" x1="40" y1="40" x2="140" y2="40"/><line class="e" x1="40" y1="40" x2="40" y2="130"/><line class="e-del" x1="40" y1="130" x2="140" y2="130"/><line class="e" x1="140" y1="40" x2="140" y2="130"/>
+            <line class="e" x1="220" y1="40" x2="320" y2="40"/><line class="e" x1="320" y1="40" x2="320" y2="130"/><line class="e-del" x1="220" y1="130" x2="320" y2="130"/><line class="e" x1="220" y1="40" x2="220" y2="130"/>
+            <path class="e-add" pathLength="1" d="M140 130 L220 130"/><path class="e-add" pathLength="1" d="M40 130 C 90 190, 270 190, 320 130"/>
+            <circle class="n" cx="40" cy="40" r="11"/><circle class="n" cx="140" cy="40" r="11"/><circle class="n" cx="40" cy="130" r="13"/><circle class="n" cx="140" cy="130" r="11"/>
+            <circle class="n" cx="220" cy="40" r="11"/><circle class="n" cx="320" cy="40" r="11"/><circle class="n" cx="220" cy="130" r="11"/><circle class="n" cx="320" cy="130" r="13"/>
+            <text class="nl" x="40" y="130">a′</text><text class="nl" x="140" y="130">a</text><text class="nl" x="220" y="130">b</text><text class="nl" x="320" y="130">b′</text>
+            <text class="cap" x="90" y="20" text-anchor="middle">T₁</text><text class="cap" x="270" y="20" text-anchor="middle">T₂</text><text class="cap" x="180" y="120" text-anchor="middle">bridge</text>
+          </svg>
+          <div class="legend"><span class="legend__i"><i class="swatch-line swatch-line--red"></i>removed</span><span class="legend__i"><i class="swatch-line swatch-line--gold"></i>added</span><span class="legend__i">result: one cycle, every city exactly once</span></div>
+        </div>
+        <p class="note">A variant, <em>best splice</em>, tries every edge of T₁ against every edge of T₂ and keeps the smallest Δ (still O(n²)). All results use the paper-faithful shortest-bridge rule unless stated otherwise.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap section" id="algorithm-properties">
+    <div class="section-head"><span class="note note--ink">[02.3] Advantages, limitations, optimality</span><span class="note">heuristic</span></div>
+    <div class="three">
+      <div class="panel reveal">
+        <div class="panel__hdr"><span class="note note--ink">Advantages</span><span class="chip chip--ok">+</span></div>
+        <ul>
+          <li><strong>Fast and scalable:</strong> <span class="mono">O(n²)</span>, against <span class="mono">O(n!)</span> for brute force and <span class="mono">O(n²2ⁿ)</span> for Held–Karp. In the paper's experiments its average running time was far below PSO and the genetic algorithm at every size tested [1].</li>
+          <li><strong>Simple and local:</strong> each subproblem only involves nearby cities, so it is easy to follow by hand, and the two halves could run in parallel.</li>
+          <li><strong>Uses geography:</strong> cities close together tend to be visited one after another, which suits dense clusters like downtown CDO.</li>
+        </ul>
+      </div>
+      <div class="panel reveal">
+        <div class="panel__hdr"><span class="note note--ink">Limitations</span><span class="chip chip--warn">−</span></div>
+        <ul>
+          <li><strong>No optimality guarantee:</strong> each merge is greedy and never revisited. In the paper, Divide and Conquer had the highest average tour length of all heuristics on the 128- and 256-city instances [1].</li>
+          <li><strong>Depends on random choices:</strong> different axis choices give different tours.</li>
+          <li><strong>Needs coordinates:</strong> it splits by map position, but costs are road distances. Places close on the map can be far apart by road (rivers, one-way streets).</li>
+          <li><strong>Boundary effects:</strong> a median cut can separate two very close cities, forcing extra travel across the cut.</li>
+        </ul>
+      </div>
+      <div class="panel panel--raised reveal">
+        <div class="panel__hdr"><span class="note note--ink">Optimal or approximate?</span><span class="chip">approximate</span></div>
+        <p>Divide and Conquer is a <strong>heuristic</strong>. It always returns a valid tour, but it does <strong>not</strong> guarantee an optimal one, and we found no constant worst-case approximation ratio for it.</p>
+        <p class="callout">On our own instance the route it finds (<span data-k="total"></span> km) is longer than the exact optimum computed by Held–Karp (<span data-k="opt"></span> km). See 05.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- =============================== 03 GRAPH MODEL =============================== -->
+<section class="page" data-page="graph" data-title="03 · Graph model">
+  <div class="wrap page-hero">
+    <div class="page-hero__top"><span class="note note--ink">[03] Methodology and graph model</span><span class="note">rubric · 15 pts</span></div>
+    <h1 class="page-hero__title">G = K<sub>10</sub>,<br><span class="outline-text">weighted in km.</span></h1>
+    <div class="page-hero__sub"><p class="lead">Ten labelled vertices, an edge for every pair, and road distances as weights, then the algorithm applied by hand.</p><span class="note page-hero__time">suggested time · 2–3 min</span></div>
+  </div>
+
+  <div class="wrap section" id="graph-vertices">
+    <div class="section-head"><span class="note note--ink">[03.1] Vertices</span><span class="note">G = (V, E, w) · x = longitude, y = latitude</span></div>
+    <div class="grid-12">
+      <div class="span-7 reveal">
+        <div class="table-wrap"><table id="tbl-vertices"><thead><tr><th>Vertex</th><th>Location</th><th>Area</th><th class="r">Latitude</th><th class="r">Longitude</th><th class="r">Map</th></tr></thead><tbody></tbody></table></div>
+        <p class="note" style="margin-top:12px">Coordinates: OpenStreetMap / Nominatim [11], located on Google Maps [12]. Each "Map" link opens the pin in Google Maps. The coordinates are used only by the divide step.</p>
+      </div>
+      <div class="span-5 reveal">
+        <div class="probe" id="graph-k10" role="img" aria-label="Labelled complete graph on the ten vertices; hover an edge or vertex to see weights.">
+          <div class="probe__hdr"><span class="note">fig. 03.1 · labelled graph K<sub>10</sub></span><span class="note" id="k10-name"></span></div>
+          <svg id="k10-svg" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet"></svg>
+          <div class="probe__cap"><span class="note"><span data-k="edges"></span> edges · each = one whole road route</span><span class="note note--accent" id="k10-sum"></span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap section" id="graph-edges">
+    <div class="section-head"><span class="note note--ink">[03.2] Edges, direction and weights</span><span class="note">hover a cell → see that road</span></div>
+    <div class="grid-12">
+      <div class="span-6 reveal stack">
+        <h2 class="section-title">Every pair, joined by a road.</h2>
+        <p><strong>Edges.</strong> An edge <span class="mono">{u, v}</span> is the drive from u to v. Its length is the road distance the OSRM Table service [14] reports for its driving profile on the OpenStreetMap road network: the route OSRM picks as fastest, not a separately minimised distance. Every location can be reached from every other, so G is the <strong>complete graph</strong> K<sub>10</sub> with C(10, 2) = <span data-k="edges"></span> edges. An edge is a whole road route, which may pass other locations without stopping. It is not a single street.</p>
+        <p><strong>Direction: undirected.</strong> One-way streets make the raw distances slightly asymmetric. For example, V0 → V1 is <span data-k="raw01"></span> km but V1 → V0 is <span data-k="raw10"></span> km. We set</p>
+        <div class="tex-block" data-tex="w(u,v)=\tfrac12\bigl(d(u\to v)+d(v\to u)\bigr)" data-display></div>
+        <p>rounded to 0.01 km, which keeps the model undirected, as the merge assumes. <strong>Units:</strong> kilometres.</p>
+      </div>
+      <div class="span-6 reveal">
+        <div class="map map--short" id="map-matrix"><div class="map__badge"><span class="note note--ink" id="matrix-badge">fig. 03.2 · hover the matrix</span></div></div>
+        <div class="legend" style="margin-top:10px"><span class="legend__i"><i class="swatch-line swatch-line--accent"></i>d(row → col)</span><span class="legend__i"><i class="swatch-line swatch-line--gold"></i>d(col → row)</span><span class="legend__i" id="matrix-readout"></span></div>
+      </div>
+      <div class="span-12 reveal" style="margin-top:16px">
+        <div class="panel__hdr"><span class="note note--ink">Weight matrix w(i, j), km · symmetric · read by the program</span><span class="note">code/data/distance_matrix_km.csv</span></div>
+        <div class="table-wrap" style="border-top:0"><table class="matrix" id="tbl-matrix"></table></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap section" id="graph-data">
+    <div class="section-head"><span class="note note--ink">[03.3] Data sources: actual vs. assumed</span><span class="note">code/data/*.csv</span></div>
+    <div class="grid-12">
+      <div class="span-7 reveal">
+        <div class="table-wrap"><table>
+          <thead><tr><th>Item</th><th>Type</th><th>Source / justification</th></tr></thead>
+          <tbody>
+            <tr><td>Locations (V0–V9)</td><td><span class="chip chip--ok">Actual</span></td><td>Real places in Cagayan de Oro City, located using Google Maps [12] and OpenStreetMap [11].</td></tr>
+            <tr><td>Coordinates</td><td><span class="chip chip--ok">Actual</span></td><td>OpenStreetMap, retrieved with the Nominatim geocoder [11].</td></tr>
+            <tr><td>Road distances d(u → v)</td><td><span class="chip chip--ok">Actual (map-derived)</span></td><td>OSRM Table service [14], driving profile, OpenStreetMap road network (<code>code/tools/build_dataset.py</code>). Cross-checked with Google Maps below.</td></tr>
+            <tr><td>Road paths drawn on this site</td><td><span class="chip chip--ok">Actual (display)</span></td><td>OSRM route service, same profile and network (<code>code/tools/fetch_road_geometry.py</code>). All 90 path lengths are within <span data-k="roadTol"></span> km of the matrix.</td></tr>
+            <tr><td>Symmetric weights w(u, v)</td><td><span class="chip">Assumed</span></td><td>Average of the two directions.</td></tr>
+            <tr><td>Travel mode; no traffic or time windows</td><td><span class="chip">Assumed</span></td><td>Simplifications listed in 01.</td></tr>
+            <tr><td>Choice of the nine stops and the start</td><td><span class="chip">Assumed</span></td><td>Scenario chosen by the group.</td></tr>
+          </tbody>
+        </table></div>
+      </div>
+      <div class="span-5 reveal stack">
+        <div class="panel panel--raised">
+          <div class="panel__hdr"><span class="note note--ink">Files</span><span class="note">one source of truth</span></div>
+          <dl class="kv">
+            <dt>locations.csv</dt><dd>vertices: id, label, name, area, lat, lon, role</dd>
+            <dt>distance_matrix_km.csv</dt><dd>w(i, j): what the solver reads</dd>
+            <dt>raw_directed_km.csv</dt><dd>d(i → j) before averaging</dd>
+          </dl>
+          <p class="note" style="margin-top:12px">Every table, figure and number on this site comes from the same program run as the report and slides (<code>python main.py --export-web</code>). The OSRM data was retrieved in October 2026. The committed CSVs are the dataset of record.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap section" id="graph-google">
+    <div class="section-head"><span class="note note--ink">[03.4] Cross-check with Google Maps</span><span class="note">each route leg searched separately · driving</span></div>
+    <div class="grid-12">
+      <div class="span-7 reveal"><div class="table-wrap"><table id="tbl-google"><thead><tr><th>Leg</th><th>From → To</th><th class="r">Matrix</th><th class="r">Google</th><th class="r">Diff.</th><th class="r">%</th></tr></thead><tbody></tbody></table></div></div>
+      <div class="span-5 reveal stack">
+        <p class="lead">Whole tour within <strong><span data-k="googlePct"></span>%</strong>. Single legs differ by up to <span data-k="googleMaxPct"></span>%.</p>
+        <p>Google values are rounded to the nearest 0.05–0.10 km, as displayed. The differences come from pin positions, one-way streets, and different road choices and turn restrictions: Google Maps and OSRM pick routes with different map data and routing rules. We keep the OSRM matrix because it is reproducible and read directly by the program.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap section" id="graph-apply">
+    <div class="section-head"><span class="note note--ink">[03.5] Applying the algorithm to our graph</span><span class="note">seed <span data-k="seed"></span> · paper's merge rule</span></div>
+    <div class="grid-12">
+      <div class="span-5 reveal">
+        <h3 class="h3">Divide</h3>
+        <div class="dtree" id="dtree"></div>
+        <p class="note" style="margin-top:10px">x = longitude, y = latitude. Highlighted leaves are the base-case tours.</p>
+      </div>
+      <div class="span-7 reveal">
+        <h3 class="h3">Conquer and combine</h3>
+        <div class="table-wrap"><table id="tbl-trace"><thead><tr><th>Step</th><th>Left tour (km)</th><th>Right tour (km)</th><th>Bridge</th><th>Removed</th><th>Added</th><th class="r">Δ</th><th class="r">Merged</th></tr></thead><tbody></tbody></table></div>
+        <p class="note" style="margin-top:10px">Each row: L(T) = L(T₁) + L(T₂) + Δ (km). Click a row to see that merge on the roads.</p>
+      </div>
+      <div class="span-12 panel panel--raised reveal" style="margin-top:24px">
+        <div class="panel__hdr"><span class="note note--ink">Worked calculation · the final merge</span><span class="note" id="worked-name"></span></div>
+        <div id="worked"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- =============================== 04 IMPLEMENTATION =============================== -->
+<section class="page" data-page="implementation" data-title="04 · Implementation">
+  <div class="wrap page-hero">
+    <div class="page-hero__top"><span class="note note--ink">[04] Python implementation and results</span><span class="note">rubric · 25 pts · final prototype</span></div>
+    <h1 class="page-hero__title">Every step,<br><span class="outline-text">on the actual roads.</span></h1>
+    <div class="page-hero__sub"><p class="lead">The recorded run of <code>dc_tsp.py</code>, replayed on the map. Every edge is drawn along the street route behind its weight.</p><span class="note page-hero__time">suggested time · 3–4 min · includes the live recording</span></div>
+  </div>
+
+  <div class="wrap section" id="implementation-player" style="padding-top:clamp(40px,5vw,72px)">
+    <div class="section-head"><span class="note note--ink">[04.1] Road-snapped step player</span><span class="note">← → keys · space to play · data: code/main.py --export-web</span></div>
+    <div class="player reveal" id="player">
+      <div class="map" id="map-player"><div class="map__badge"><span class="note note--ink" id="player-badge"></span><span class="note" id="player-sub"></span></div></div>
+      <aside class="player__side" aria-label="Algorithm steps">
+        <div class="player__bar">
+          <label class="player__seed note" for="seed-select">seed
+            <select id="seed-select" aria-label="Random seed"></select>
+          </label>
+          <span class="note" id="seed-total"></span>
+        </div>
+        <div class="player__progress"><span id="player-progress"></span></div>
+        <div class="player__info" aria-live="polite">
+          <div class="player__kind"><span class="note note--accent" id="player-kind"></span><span class="note" id="player-count"></span></div>
+          <div class="player__title" id="player-title"></div>
+          <div class="player__body" id="player-body"></div>
+        </div>
+        <ol class="player__list" id="player-list"></ol>
+        <div class="player__ctrl">
+          <button class="tool" type="button" id="pl-first" aria-label="First step" title="First">⇤</button>
+          <button class="tool" type="button" id="pl-prev" aria-label="Previous step" title="Previous (←)">←</button>
+          <button class="btn btn--sm grow" type="button" id="pl-play" style="justify-content:center">▶ Play</button>
+          <button class="tool" type="button" id="pl-next" aria-label="Next step" title="Next (→)">→</button>
+          <button class="tool" type="button" id="pl-last" aria-label="Last step" title="Last">⇥</button>
+        </div>
+      </aside>
+    </div>
+    <div class="player__foot">
+      <div class="legend">
+        <span class="legend__i"><i class="vx vx--L" style="width:18px;height:14px;font-size:0"></i>left half / T₁</span>
+        <span class="legend__i"><i class="vx vx--R" style="width:18px;height:14px;font-size:0"></i>right half / T₂</span>
+        <span class="legend__i"><i class="swatch-line swatch-line--gold"></i>added edge / bridge</span>
+        <span class="legend__i"><i class="swatch-line swatch-line--red"></i>removed edge</span>
+        <span class="legend__i"><i class="swatch-line swatch-line--muted"></i>other sub-tours</span>
+        <span class="legend__i"><i class="swatch-line swatch-line--dash"></i>median cut</span>
+      </div>
+      <span class="note">Roads: OSRM route service on OpenStreetMap data. Labels show the model weight w(u,v), the average of both directions.</span>
+    </div>
+  </div>
+
+  <div class="wrap section" id="implementation-code">
+    <div class="section-head"><span class="note note--ink">[04.2] Main code components</span><span class="note">Python 3 · standard library · matplotlib for figures only</span></div>
+    <div class="grid-12">
+      <div class="span-5 reveal">
+        <div class="table-wrap"><table>
+          <thead><tr><th>Code</th><th>What it does</th></tr></thead>
+          <tbody id="components">
+            <tr data-fn="data"><td><code>data/*.csv</code></td><td>Input: vertices (<code>locations.csv</code>) and weights (<code>distance_matrix_km.csv</code>)</td></tr>
+            <tr class="is-clickable" data-fn="split"><td><code>split</code></td><td>Divide: random axis, sort, median cut</td></tr>
+            <tr class="is-clickable" data-fn="solve"><td><code>solve</code></td><td>Recursion and base cases; records each step</td></tr>
+            <tr class="is-clickable" data-fn="shortest_bridge"><td><code>shortest_bridge</code></td><td>Combine: the closest cross pair (a, b)</td></tr>
+            <tr class="is-clickable" data-fn="merge"><td><code>merge</code></td><td>Combine: remove 2 edges, add 2 (one is the bridge), smallest Δ</td></tr>
+            <tr class="is-clickable" data-fn="divide_and_conquer_tsp"><td><code>divide_and_conquer_tsp</code></td><td>Step 1 shuffle, run, rotate the cycle to start at V0</td></tr>
+            <tr class="is-clickable" data-fn="check_route"><td><code>check_route</code></td><td>Valid closed tour? Recompute the total from the weights</td></tr>
+            <tr class="is-clickable" data-fn="held_karp"><td><code>held_karp</code></td><td>Exact optimum, <em>for comparison only</em></td></tr>
+          </tbody>
+        </table></div>
+        <p class="note" style="margin-top:10px">Click a row to open its source. The source shown is the exact file the run used.</p>
+      </div>
+      <div class="span-7 reveal">
+        <div class="codebox"><div class="codebox__tabs" id="code-tabs" role="tablist"></div><pre id="code-view"><code></code></pre></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap section" id="implementation-demo">
+    <div class="section-head"><span class="note note--ink">[04.3] Live demo</span><span class="note">the screen recording shows this run</span></div>
+    <div class="grid-12">
+      <div class="span-4 reveal stack">
+        <h2 class="section-title" style="font-size:var(--step-2)">python main.py</h2>
+        <p>The program prints, in order:</p>
+        <ol>
+          <li>the input data: vertices and weight matrix</li>
+          <li>every divide, base-case and merge step, with its arithmetic</li>
+          <li>the resulting route, leg by leg, with cumulative km</li>
+          <li>the verification checks</li>
+          <li>the comparison with the exact optimum</li>
+          <li>statistics over <span data-k="runs"></span> seeds</li>
+        </ol>
+        <p class="note">Captured output of the run that produced this site. Timings vary from machine to machine.</p>
+      </div>
+      <div class="span-8 reveal">
+        <div class="term">
+          <div class="term__bar"><span class="term__dots"><i></i><i></i><i></i></span><span class="grow">code/ — python main.py --no-plot --export-web</span><button type="button" id="term-replay">↻ Replay</button><button type="button" id="term-skip">Show all</button></div>
+          <pre id="term"></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap section" id="implementation-route">
+    <div class="section-head"><span class="note note--ink">[04.4] Resulting route</span><span class="note">seed <span data-k="seed"></span> · <span data-k="total"></span> km</span></div>
+    <p class="lead reveal" style="max-width:none;margin-bottom:24px"><span class="mono" data-k="route"></span></p>
+    <div class="grid-12">
+      <div class="span-7 reveal"><div class="map" id="map-route"><div class="map__badge"><span class="note note--ink">fig. 04.4 · route on the roads · numbers = leg order</span></div></div></div>
+      <div class="span-5 reveal">
+        <div class="table-wrap"><table id="tbl-legs"><thead><tr><th>Leg</th><th>From</th><th>To</th><th class="r">km</th><th class="r">Cum.</th></tr></thead><tbody></tbody></table></div>
+        <p class="note" style="margin-top:10px">Click a leg to zoom to its road.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap section" id="implementation-verify">
+    <div class="section-head"><span class="note note--ink">[04.5] Verification: recomputing the total</span><span class="note">verify.check_route</span></div>
+    <div class="grid-12">
+      <div class="span-6 reveal"><ul class="chips" id="checks" style="list-style:none;padding:0;flex-direction:column;align-items:flex-start;gap:10px"></ul></div>
+      <div class="span-6 reveal">
+        <div class="panel panel--raised">
+          <div class="panel__hdr"><span class="note note--ink">Recomputed from the edge weights</span><span class="note">km</span></div>
+          <div class="calc" id="recompute" style="white-space:pre-wrap;background:transparent;padding:0"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- =============================== 05 CONCLUSION =============================== -->
+<section class="page" data-page="conclusion" data-title="05 · Conclusion">
+  <div class="wrap page-hero">
+    <div class="page-hero__top"><span class="note note--ink">[05] Solution and conclusion</span><span class="note">rubric · 20 pts</span></div>
+    <h1 class="page-hero__title">Valid, fast, <span class="outline-text">and not</span><br><span class="outline-text">optimal.</span></h1>
+    <div class="page-hero__sub"><p class="lead"><span data-k="total"></span> km, verified. That is <span data-k="gap"></span>% above the exact optimum of <span data-k="opt"></span> km, and we can show exactly where.</p><span class="note page-hero__time">suggested time · 1–2 min</span></div>
+  </div>
+
+  <div class="wrap section" id="conclusion-interpret">
+    <div class="section-head"><span class="note note--ink">[05.1] Interpreting the route</span><span class="note">does it meet the objective?</span></div>
+    <div class="grid-12">
+      <div class="span-6 reveal stack">
+        <p>The route meets the constraints. The guests leave USTP, visit each of the nine landmarks <strong>exactly once</strong>, and return to USTP, in one loop of <strong><span data-k="total"></span> km</strong>. The loop goes south to Limketkai, north to the port, then south-west through Capitol University, Centrio, Pelaez, Museo de Oro, Divisoria and the Cathedral, and finally north to Liceo before heading back east to USTP.</p>
+        <p>Because the divide step groups nearby places, the tight cluster around Divisoria (V4, V5, V6) is visited one after another, using short edges (<span data-w="4,5"></span> and <span data-w="5,6"></span> km).</p>
+        <p>Summing the raw one-way OSRM values in the order driven gives <strong><span data-k="directed"></span> km</strong>. The difference from <span data-k="total"></span> km comes from the model's averaged, undirected weights.</p>
+      </div>
+      <div class="span-6 reveal">
+        <div class="panel panel--raised stack">
+          <div class="panel__hdr"><span class="note note--ink">Where the route loses to the optimum</span><span class="note">merge M2</span></div>
+          <p>Only one thing differs from the optimal tour: the order of the stops inside this cluster.</p>
+          <div class="calc" id="cluster-calc"></div>
+          <p>Merge M1 only builds the triangle V3, V4, V5, whose length does not depend on the order. Merge M2 decides it. There the shortest bridge is V6–V5 (<span data-w="6,5"></span> km), and the paper's rule must add it. The cheapest way to open the triangle around it removes V3–V5, leaving V3 → V4 → V5 (Δ = <span data-k="m2delta"></span> km).</p>
+          <p>The optimal order needs V6–V4 (<span data-w="6,4"></span> km), which is not the shortest bridge, so it is never considered. Opening the triangle at V3–V4 and adding V6–V4 and V8–V3 would give Δ = <span data-k="altDelta"></span> km, which is cheaper, but only the best-splice variant can choose it.</p>
+          <p class="callout">The long final leg V8 → V0 (<span data-w="8,0"></span> km) is <strong>not</strong> the cause: the optimal tour uses the same edge. The gap is a greedy, irreversible merge decision.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap section" id="conclusion-optimal">
+    <div class="section-head"><span class="note note--ink">[05.2] Is it optimal? No, and we can show it</span><span class="note">Held–Karp [3], used only for comparison</span></div>
+    <div class="grid-12">
+      <div class="span-7 reveal">
+        <div class="map" id="map-compare"><div class="map__badge"><span class="note note--ink" id="compare-badge"></span></div></div>
+        <div class="player__foot">
+          <div class="chips" role="tablist" aria-label="Which tour to show">
+            <button class="btn btn--sm" type="button" data-cmp="dc">Divide &amp; Conquer · <span data-k="total"></span></button>
+            <button class="btn btn--sm btn--ghost" type="button" data-cmp="opt">Optimal · <span data-k="opt"></span></button>
+            <button class="btn btn--sm btn--ghost" type="button" data-cmp="twoopt">2-opt fix</button>
+          </div>
+        </div>
+      </div>
+      <div class="span-5 reveal stack">
+        <p>With only <span data-k="n"></span> vertices, the exact Held–Karp algorithm (Algorithm 2.2 of the paper) runs in well under a second. It gives the provably optimal tour</p>
+        <p class="mono" data-k="optRoute"></p>
+        <p>of length <strong><span data-k="opt"></span> km</strong>. Our route is <span data-k="total"></span> km, <strong><span data-k="gap"></span>% longer</strong>. It is an <strong>approximate</strong> solution.</p>
+        <div class="panel panel--raised"><div class="panel__hdr"><span class="note note--ink">Map overlays</span></div><p class="note" id="compare-note"></p></div>
+      </div>
+    </div>
+
+    <div style="margin-top:56px" class="reveal">
+      <div class="panel__hdr"><span class="note note--ink">fig. 05.2 · tour length of every run, seeds 0–<span data-k="runsMax"></span></span><span class="note">one dot = one seed · click a dot to replay that seed in 04</span></div>
+      <div class="dots" id="dots"></div>
+    </div>
+    <div class="grid-12" style="margin-top:32px">
+      <div class="span-7 reveal"><div class="table-wrap"><table id="tbl-exp"><thead><tr><th>Method</th><th class="r">Best</th><th class="r">Worst</th><th class="r">Mean</th><th class="r">Std.</th><th class="r">Mean gap</th><th class="r">Optimal</th></tr></thead><tbody></tbody></table></div></div>
+      <div class="span-5 reveal"><p>The paper reports 10 runs; we repeated ours over <span data-k="runs"></span> seeds. With the shortest-bridge merge, tour length ranged from <span data-k="bridgeBest"></span> to <span data-k="bridgeWorst"></span> km (mean <span data-k="bridgeMean"></span> km, <span data-k="bridgeMeanGap"></span>% above optimal). Only <span data-k="bridgeHits"></span> of <span data-k="runs"></span> runs happened to be optimal, and the algorithm cannot tell which. Only the separate Held–Karp check shows it.</p></div>
+    </div>
+  </div>
+
+  <div class="wrap section" id="conclusion-limits">
+    <div class="section-head"><span class="note note--ink">[05.3] Limitations and improvements</span><span class="note">possible next steps</span></div>
+    <div class="two">
+      <div class="panel reveal">
+        <div class="panel__hdr"><span class="note note--ink">Limitations of the solution</span></div>
+        <ul>
+          <li>The route is approximate (<span data-k="gap"></span>% above optimal) and depends on the seed: over <span data-k="runs"></span> seeds it ranges from <span data-k="bridgeBest"></span> to <span data-k="bridgeWorst"></span> km.</li>
+          <li>Distance is the only cost. Traffic, travel time, opening hours and time at each stop are ignored, though they matter for a real one-day tour.</li>
+          <li>Weights are symmetric averages, so one-way streets are only approximated (the route is <span data-k="directed"></span> km on the raw one-way values).</li>
+          <li>Road distances come from OpenStreetMap routing. Google Maps gave <span data-k="googleTotal"></span> km against <span data-k="total"></span> km (+<span data-k="googlePct"></span>%) for the final route. The optimality claim holds for the OSRM matrix only; we did not recompute the optimum with Google distances.</li>
+        </ul>
+      </div>
+      <div class="panel reveal">
+        <div class="panel__hdr"><span class="note note--ink">Improvements</span></div>
+        <ul>
+          <li><strong>Local search after merging [6].</strong> A single 2-opt move that reverses V4 → V5 replaces V3–V4 (<span data-w="3,4"></span>) and V5–V6 (<span data-w="5,6"></span>) with V3–V5 (<span data-w="3,5"></span>) and V4–V6 (<span data-w="4,6"></span>). That saves <span data-k="twoOptSave"></span> km and gives exactly <span data-k="twoOptTotal"></span> km, the optimum. Shown as "2-opt fix" on the map above.</li>
+          <li><strong>Multiple restarts.</strong> Run several seeds and keep the shortest. The best of <span data-k="runs"></span> runs was <span data-k="bridgeBest"></span> km. We only know it is the optimum because Held–Karp says so; restarts alone prove nothing.</li>
+          <li><strong>Merge rule.</strong> The best-splice variant reached the optimum more often (<span data-k="bestHits"></span> vs. <span data-k="bridgeHits"></span> runs), but its mean was <span data-k="bestMean"></span> km against <span data-k="bridgeMean"></span> km. A cheaper merge at each step does not guarantee a shorter final tour.</li>
+          <li><strong>Richer weights.</strong> Travel time with traffic from Google Maps, or a directed matrix, if the objective changes from distance to time.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap section" id="conclusion-final">
+    <div class="section-head"><span class="note note--ink">[05.4] Conclusion</span><span class="note">summary</span></div>
+    <ul class="lead reveal" style="max-width:62ch">
+      <li>We modelled a downtown Cagayan de Oro guest tour as a TSP on the complete undirected graph K<sub>10</sub>, with road distances in km.</li>
+      <li>We implemented Divide and Conquer (Algorithm 2.8), fixing the merge so it always returns a valid Hamiltonian cycle, in <span class="mono">O(n²)</span> time.</li>
+      <li>Route: <span class="mono" style="font-size:.8em" data-k="route"></span></li>
+      <li>Total <strong><span data-k="total"></span> km</strong>, verified; <strong><span data-k="gap"></span>% above</strong> the optimum of <span data-k="opt"></span> km.</li>
+      <li>Fast and valid, but <strong>approximate</strong>, not proven optimal. A local-search pass or several restarts would improve it.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- =============================== 06 REFERENCES =============================== -->
+<section class="page" data-page="references" data-title="06 · References">
+  <div class="wrap page-hero">
+    <div class="page-hero__top"><span class="note note--ink">[06] References</span><span class="note">rubric · submission and references · 5 pts</span></div>
+    <h1 class="page-hero__title">Sources.</h1>
+    <div class="page-hero__sub"><p class="lead">For the algorithm, the code and the application data. Same list as latex/shared/dc-tsp-refs.bib.</p><span class="note page-hero__time">bracketed numbers on this site refer to this list</span></div>
+  </div>
+  <div class="wrap section" style="padding-top:48px">
+    <ol class="refs reveal">
+      <li><div>R. Luna-Garcia, T. M. C. Candano and R. L. Caga-anan. Performance analysis of classical algorithms for the traveling salesman problem. <em>The Mindanawan Journal of Mathematics</em>, 6(2):79–111, 2024. doi:<a href="https://doi.org/10.62071/tmjm.v6i2.716" target="_blank" rel="noopener">10.62071/tmjm.v6i2.716</a>.<span class="note use">Algorithm 2.8 and the Appendix 4.8 code were adapted for this project.</span></div></li>
+      <li><div>R. M. Karp. Probabilistic analysis of partitioning algorithms for the traveling-salesman problem in the plane. <em>Mathematics of Operations Research</em>, 2(3):209–224, 1977.</div></li>
+      <li><div>M. Held and R. M. Karp. A dynamic programming approach to sequencing problems. <em>Journal of the Society for Industrial and Applied Mathematics</em>, 10(1):196–210, 1962.<span class="note use">Exact baseline used only for comparison.</span></div></li>
+      <li><div>T. H. Cormen, C. E. Leiserson, R. L. Rivest and C. Stein. <em>Introduction to Algorithms</em>. MIT Press, 3rd edition, 2009.</div></li>
+      <li><div>M. R. Garey and D. S. Johnson. <em>Computers and Intractability: A Guide to the Theory of NP-Completeness</em>. W. H. Freeman, 1979.</div></li>
+      <li><div>D. L. Applegate, R. E. Bixby, V. Chvátal and W. J. Cook. <em>The Traveling Salesman Problem: A Computational Study</em>. Princeton University Press, 2006.</div></li>
+      <li><div>CodingDrills. Divide and conquer algorithms: divide and conquer on graphs – traveling salesman problem. <a href="https://www.codingdrills.com/tutorial/introduction-to-divide-and-conquer-algorithms/travelling-salesman-prob" target="_blank" rel="noopener">codingdrills.com</a>.<span class="note use">Cited as reference [6] in Luna-Garcia et al. (2024).</span></div></li>
+      <li><div>M. Moreno Maza. The complexity of divide-and-conquer algorithms. University of Western Ontario lecture notes. <a href="https://www.csd.uwo.ca/~mmorenom/CS874/Lectures/Introduction.html/node16.html" target="_blank" rel="noopener">csd.uwo.ca</a>.</div></li>
+      <li><div>D. Luxen and C. Vetter. Real-time routing with OpenStreetMap data. In <em>Proceedings of the 19th ACM SIGSPATIAL International Conference on Advances in Geographic Information Systems</em>, pages 513–516, 2011. doi:<a href="https://doi.org/10.1145/2093973.2094062" target="_blank" rel="noopener">10.1145/2093973.2094062</a>.</div></li>
+      <li><div>J. D. Hunter. Matplotlib: a 2D graphics environment. <em>Computing in Science &amp; Engineering</em>, 9(3):90–95, 2007. doi:<a href="https://doi.org/10.1109/MCSE.2007.55" target="_blank" rel="noopener">10.1109/MCSE.2007.55</a>.</div></li>
+      <li><div>OpenStreetMap contributors. OpenStreetMap. <a href="https://www.openstreetmap.org" target="_blank" rel="noopener">openstreetmap.org</a>.<span class="note use">Map data under the Open Database License. Coordinates retrieved via Nominatim.</span></div></li>
+      <li><div>Google. Google Maps. <a href="https://maps.google.com" target="_blank" rel="noopener">maps.google.com</a>.<span class="note use">Used to locate and cross-check the vertices and road distances; accessed October 2026.</span></div></li>
+      <li><div>OpenStreetMap Foundation. Standard tile layer. <a href="https://operations.osmfoundation.org/policies/tiles/" target="_blank" rel="noopener">tile.openstreetmap.org</a>.<span class="note use">Website basemap only (the same OpenStreetMap data the OSRM roads come from).</span></div></li>
+      <li><div>OSRM contributors. OSRM Table and Route service API. <a href="https://project-osrm.org/docs/v5.24.0/api/" target="_blank" rel="noopener">project-osrm.org</a>.<span class="note use">Public demo routing service on OpenStreetMap data; distances (Table) and the road paths drawn on this site (Route); accessed October 2026.</span></div></li>
+      <li><div>V. Agafonkin et al. Leaflet 1.9.4; Khan Academy et al. KaTeX 0.16.9. <a href="https://leafletjs.com" target="_blank" rel="noopener">leafletjs.com</a> · <a href="https://katex.org" target="_blank" rel="noopener">katex.org</a>.<span class="note use">Website map and math rendering libraries.</span></div></li>
+    </ol>
+  </div>
+</section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="site-footer__grid">
+      <div>
+        <div class="brand__name" style="font-size:1.2rem;margin-bottom:8px">Divide &amp; Conquer for the TSP</div>
+        <p class="muted" style="max-width:40ch">A one-day city tour of downtown Cagayan de Oro. Graph Theory, Performance Innovative Task (Algorithm 2.8).</p>
+      </div>
+      <div><h4>Outline</h4><ul>
+        <li><a href="#/problem">01 Problem</a></li><li><a href="#/algorithm">02 Algorithm</a></li><li><a href="#/graph">03 Graph model</a></li>
+        <li><a href="#/implementation">04 Implementation</a></li><li><a href="#/conclusion">05 Conclusion</a></li><li><a href="#/references">06 References</a></li></ul></div>
+      <div><h4>Sources</h4><ul>
+        <li><a href="https://doi.org/10.62071/tmjm.v6i2.716" target="_blank" rel="noopener">Luna-Garcia et al. 2024</a></li>
+        <li><a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a></li>
+        <li><a href="https://project-osrm.org" target="_blank" rel="noopener">OSRM</a></li>
+        <li><a href="https://maps.google.com" target="_blank" rel="noopener">Google Maps</a></li></ul></div>
+      <div><h4>Group</h4><ul><li>Heart Chiong</li><li>Mark Vincent Limpahan</li><li>Roxanne Locsin</li><li>Rhenel Jhon Sajol</li></ul></div>
+    </div>
+    <div class="site-footer__base">
+      <span class="note">Every number on this site is generated by <code>code/main.py --export-web</code>.</span>
+      <span class="note"><kbd id="kbd-mod2">⌘</kbd> <kbd>K</kbd> commands · <kbd>Alt</kbd> <kbd>G</kbd> grid · <kbd>←</kbd> <kbd>→</kbd> steps</span>
+    </div>
+  </div>
+</footer>
+
+<div class="palette" id="palette" role="dialog" aria-modal="true" aria-label="Command menu">
+  <div class="palette__box">
+    <input id="palette-input" type="text" placeholder="Jump to a section, a merge step, a seed…" autocomplete="off" spellcheck="false" aria-controls="palette-list">
+    <ul id="palette-list" role="listbox"></ul>
+    <div class="palette__foot note"><span><kbd>↑</kbd> <kbd>↓</kbd> move</span><span><kbd>Enter</kbd> open</span><span><kbd>Esc</kbd> close</span></div>
+  </div>
+</div>
+<div class="grid-overlay" id="grid-overlay" aria-hidden="true"><div class="wrap"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div><span class="grid-overlay__tag">12 col · Alt G</span></div>
+<div class="toast" id="toast" role="status"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="data/run.js"></script>
+<script src="data/roads.js"></script>
+<script src="assets/core.js"></script>
+<script src="assets/maps.js"></script>
+<script src="assets/pages.js"></script>
+<script src="assets/player.js"></script>
+</body>
+</html>

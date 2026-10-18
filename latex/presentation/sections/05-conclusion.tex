@@ -1,6 +1,26 @@
 % Suggested time: 1-2 minutes
 \section{Conclusion}
 
+\begin{frame}{Interpreting the Route}
+  \small
+  \begin{itemize}
+    \item Meets the objective's constraints: leave USTP, visit each of the 9 landmarks \textbf{exactly once},
+          return to USTP, in one loop of \textbf{\DCTotal{} km}.
+    \item Nearby places are grouped: the Divisoria cluster V4, V5, V6 is visited consecutively
+          (0.54 and 0.74 km).
+    \item Driven with the raw one-way distances, the same route is \textbf{13.54 km}; 13.82 km uses the
+          averaged, undirected weights of the model.
+  \end{itemize}
+  \medskip
+  \begin{block}{Where the route loses to the optimum}
+    \footnotesize
+    Only the order inside the cluster differs: ours V3$\to$V4$\to$V5$\to$V6 ($1.31+0.54+0.74 = 2.59$ km),
+    optimal V3$\to$V5$\to$V4$\to$V6 ($0.97+0.54+0.87 = 2.38$ km). Merge M2 must add the shortest bridge
+    V6--V5, so the edge V6--V4 is never considered. The long leg V8$\to$V0 is \emph{not} the cause:
+    the optimal tour uses it too.
+  \end{block}
+\end{frame}
+
 \begin{frame}{Is It Optimal? No --- and We Can Show It}
   \small
   Exact Held--Karp~\cite{heldkarp1962} on the same graph, used only for comparison:
@@ -16,8 +36,8 @@
   \input{../shared/generated/experiments}
 
   \medskip
-  \footnotesize Repeated over \RunCount{} random seeds, as in Table~2 of the paper: only \BridgeOptHits{} runs
-  happened to be optimal, and the algorithm cannot tell which.
+  \footnotesize The paper reports 10 runs; we repeated ours over \RunCount{} random seeds. Only \BridgeOptHits{}
+  runs happened to be optimal, and the algorithm cannot tell which; only Held--Karp shows it.
 \end{frame}
 
 \begin{frame}{Limitations and Improvements}
@@ -26,9 +46,11 @@
       \begin{block}{Limitations}
         \small
         \begin{itemize}
-          \item Approximate; depends on the seed
+          \item Approximate (\DCGap\% above optimal); depends on the seed (\BridgeBest{}--\BridgeWorst{} km
+                over \RunCount{} seeds)
           \item Distance only: no traffic or time windows
-          \item One-way streets averaged
+          \item One-way streets averaged (13.54 km on raw one-way values)
+          \item OSRM vs.\ Google Maps: 13.82 vs.\ 14.40 km; optimality is shown for the OSRM matrix only
         \end{itemize}
       \end{block}
     \end{column}
@@ -36,8 +58,10 @@
       \begin{block}{Improvements}
         \small
         \begin{itemize}
-          \item 2-opt / Or-opt to fix seam edges (e.g.\ V8--V0)
-          \item Restart with several seeds, keep the best (best of \RunCount{}: \BridgeBest{} km)
+          \item 2-opt: reversing V4$\to$V5 swaps V3--V4, V5--V6 ($1.31+0.74$) for V3--V5, V4--V6
+                ($0.97+0.87$), saving 0.21 km $\Rightarrow$ exactly \OptTotal{} km
+          \item Restart with several seeds, keep the best (best of \RunCount{}: \BridgeBest{} km; only
+                Held--Karp shows it is optimal)
           \item Best-splice merge: more optimal hits, but no better on average
           \item Travel-time weights from Google Maps
         \end{itemize}
