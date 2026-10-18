@@ -21,6 +21,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@300..700&family=Geist+Mono:wght@400..600&display=swap">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/maplibre-gl/4.7.1/maplibre-gl.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
 <link rel="stylesheet" href="assets/style.css">
 </head>
@@ -667,7 +668,7 @@
       <li><div>J. D. Hunter. Matplotlib: a 2D graphics environment. <em>Computing in Science &amp; Engineering</em>, 9(3):90–95, 2007. doi:<a href="https://doi.org/10.1109/MCSE.2007.55" target="_blank" rel="noopener">10.1109/MCSE.2007.55</a>.</div></li>
       <li><div>OpenStreetMap contributors. OpenStreetMap. <a href="https://www.openstreetmap.org" target="_blank" rel="noopener">openstreetmap.org</a>.<span class="note use">Map data under the Open Database License. Coordinates retrieved via Nominatim.</span></div></li>
       <li><div>Google. Google Maps. <a href="https://maps.google.com" target="_blank" rel="noopener">maps.google.com</a>.<span class="note use">Used to locate and cross-check the vertices and road distances; accessed October 2026.</span></div></li>
-      <li><div>OpenStreetMap Foundation. Standard tile layer. <a href="https://operations.osmfoundation.org/policies/tiles/" target="_blank" rel="noopener">tile.openstreetmap.org</a>.<span class="note use">Website basemap only (the same OpenStreetMap data the OSRM roads come from).</span></div></li>
+      <li><div>OpenFreeMap and OpenMapTiles. Positron and Dark vector map styles. <a href="https://openfreemap.org" target="_blank" rel="noopener">openfreemap.org</a>.<span class="note use">Website basemap only; built on the same OpenStreetMap data the OSRM roads come from. Rendered with MapLibre GL.</span></div></li>
       <li><div>OSRM contributors. OSRM Table and Route service API. <a href="https://project-osrm.org/docs/v5.24.0/api/" target="_blank" rel="noopener">project-osrm.org</a>.<span class="note use">Public demo routing service on OpenStreetMap data; distances (Table) and the road paths drawn on this site (Route); accessed October 2026.</span></div></li>
       <li><div>V. Agafonkin et al. Leaflet 1.9.4; Khan Academy et al. KaTeX 0.16.9. <a href="https://leafletjs.com" target="_blank" rel="noopener">leafletjs.com</a> · <a href="https://katex.org" target="_blank" rel="noopener">katex.org</a>.<span class="note use">Website map and math rendering libraries.</span></div></li>
     </ol>
@@ -711,6 +712,8 @@
 <div class="toast" id="toast" role="status"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/maplibre-gl/4.7.1/maplibre-gl.js"></script>
+<script src="https://unpkg.com/@maplibre/maplibre-gl-leaflet@0.0.22/leaflet-maplibre-gl.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
 <script src="data/run.js"></script>
 <script src="data/roads.js"></script>

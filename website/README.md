@@ -12,7 +12,9 @@ A static site that presents the project. Its tabs follow the presentation outlin
   ```
 - **GitHub Pages:** publish the `website/` folder. It has no build step.
 
-The map tiles (OpenStreetMap), Leaflet, KaTeX and the Geist fonts load from the internet. Without a connection the maps don't load, but every table and number still shows.
+The basemap, Leaflet, MapLibre, KaTeX and the Geist fonts load from the internet. Without a connection the maps don't load, but every table and number still shows.
+
+The basemap is [OpenFreeMap](https://openfreemap.org) (OpenStreetMap data, no API key), drawn with MapLibre inside Leaflet. Browsers without WebGL fall back to Esri's gray canvas tiles. Don't switch to `tile.openstreetmap.org`: it blocks requests without a `Referer`, which includes every page opened from disk (403 "Access blocked").
 
 ## Where the numbers come from
 

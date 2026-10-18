@@ -4,12 +4,33 @@
   "use strict";
   var DC = window.DC, RUN = DC.RUN, ROADS = DC.ROADS;
   var M = (DC.map = {});
-  // OpenStreetMap's own tiles: the same data OSRM routes on, so the drawn roads sit on the drawn streets.
-  // Dark mode inverts the tile pane in CSS instead of switching providers.
-  var TILES = "https://tile.openstreetmap.org/{z}/{x}/{y}.png";
-  var ATTR = '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors · roads: <a href="https://project-osrm.org" target="_blank" rel="noopener">OSRM</a>';
+  // Basemap: OpenFreeMap vector tiles (OpenStreetMap data, the same data OSRM routes on), drawn by MapLibre
+  // inside Leaflet. Free, no key, and no Referer requirement, so it also works when index.html is opened
+  // from disk (tile.openstreetmap.org blocks those requests). Without WebGL, fall back to Esri raster tiles.
+  var STYLES = { light: "https://tiles.openfreemap.org/styles/positron", dark: "https://tiles.openfreemap.org/styles/dark" };
+  var ESRI = { light: "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}",
+               dark: "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}" };
+  var OSM = '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors';
+  var ROUTES = ' · roads: <a href="https://project-osrm.org" target="_blank" rel="noopener">OSRM</a>';
+  var ATTR = '<a href="https://openfreemap.org" target="_blank" rel="noopener">OpenFreeMap</a> &copy; <a href="https://www.openmaptiles.org/" target="_blank" rel="noopener">OpenMapTiles</a> ' + OSM + ROUTES;
+  var ATTR_ESRI = "Tiles &copy; Esri" + ROUTES;
   var maps = [];
   M.ok = !!window.L;
+  var vector = (function () {
+    if (!window.L || !L.maplibreGL || !window.maplibregl) return false;
+    try { var c = document.createElement("canvas"); return !!(c.getContext("webgl2") || c.getContext("webgl")); } catch (e) { return false; }
+  })();
+
+  function basemap(theme) {
+    if (vector) return L.maplibreGL({ style: STYLES[theme], attribution: ATTR, interactive: false });
+    return L.tileLayer(ESRI[theme], { attribution: ATTR_ESRI, maxZoom: 19, maxNativeZoom: 16 });
+  }
+  document.addEventListener("dc:theme", function (e) {
+    maps.forEach(function (m) {
+      if (vector && m._dcTiles.getMaplibreMap) m._dcTiles.getMaplibreMap().setStyle(STYLES[e.detail]);
+      else { m.removeLayer(m._dcTiles); m._dcTiles = basemap(e.detail).addTo(m); }
+    });
+  });
 
   M.create = function (el, opts) {
     if (!M.ok) { el.insertAdjacentHTML("beforeend", '<p class="note" style="padding:60px 20px;text-align:center">The map library could not load (offline?). The tables on this page still hold every value.</p>'); return null; }
@@ -17,8 +38,7 @@
     var map = L.map(el, { zoomControl: false, scrollWheelZoom: false, attributionControl: true, zoomSnap: 1, preferCanvas: false });
     map.attributionControl.setPrefix(false);
     L.control.zoom({ position: "topright" }).addTo(map);
-    var layer = L.tileLayer(TILES, { attribution: ATTR, maxZoom: 19 }).addTo(map);
-    map._dcTiles = layer;
+    map._dcTiles = basemap(DC.theme()).addTo(map);
     // scroll-zoom only after the reader clicks the map, so the page keeps scrolling normally
     map.on("click", function () { map.scrollWheelZoom.enable(); });
     el.addEventListener("mouseleave", function () { map.scrollWheelZoom.disable(); });
