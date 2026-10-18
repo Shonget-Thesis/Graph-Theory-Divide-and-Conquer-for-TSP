@@ -8,8 +8,8 @@ driving distance as short as possible, which saves fuel and leaves more time at 
 exactly a TSP.
 
 \paragraph{Area.} Downtown Cagayan de Oro City, Misamis Oriental. All ten locations lie within the
-city centre and the neighbouring Poblacion barangays (Lapasan, Licoan, Burgos, Nazareth, Carmen and
-Macabalan), in an area of roughly $2.5 \times 2$~km. We restricted the study to downtown so that
+city centre and neighbouring barangays (Lapasan, Licoan, Burgos, Nazareth, Carmen and
+Macabalan), in an area of roughly $2.5 \times 2.2$~km. We restricted the study to downtown so that
 every stop is reachable in a few minutes and the whole graph fits on one readable map.
 
 \paragraph{Starting location and required locations.} The start and end point is V0 (\StartName). The nine
@@ -18,8 +18,8 @@ required stops are V1--V9, listed with their coordinates in Table~\ref{tab:verti
 
 \paragraph{Assumptions.}
 \begin{enumerate}
-  \item The group travels by car, and between any two stops the driver follows the shortest driving route
-        on the public road network.
+  \item The group travels by car, and between any two stops the driver follows the route returned by
+        OSRM's default fastest car profile on the public road network.
   \item The distance between two stops is the same in both directions. Where the road data differ
         because of one-way streets, we use the average of the two directions (Section~\ref{sec:edges}).
   \item Traffic, opening hours, waiting and the time spent at each stop are not modelled; they do not

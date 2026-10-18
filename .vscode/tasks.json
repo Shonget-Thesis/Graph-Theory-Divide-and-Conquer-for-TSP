@@ -4,8 +4,11 @@
     {
       "label": "Build report",
       "type": "shell",
-      "command": "latexmk -pdf -interaction=nonstopmode -synctex=1 -outdir=build main.tex",
-      "options": { "cwd": "${workspaceFolder}/latex/report" },
+      "command": "D:/MiKTeX/miktex/bin/x64/latexmk.exe -pdf -interaction=nonstopmode -synctex=1 -outdir=build main.tex",
+      "options": {
+        "cwd": "${workspaceFolder}/latex/report",
+        "env": { "Path": "D:/MiKTeX/miktex/bin/x64;D:/Strawberry/perl/bin;${env:Path}" }
+      },
       "group": { "kind": "build", "isDefault": true },
       "presentation": { "reveal": "always", "panel": "dedicated" },
       "problemMatcher": []
@@ -13,8 +16,11 @@
     {
       "label": "Build presentation",
       "type": "shell",
-      "command": "latexmk -pdf -interaction=nonstopmode -synctex=1 -outdir=build main.tex",
-      "options": { "cwd": "${workspaceFolder}/latex/presentation" },
+      "command": "D:/MiKTeX/miktex/bin/x64/latexmk.exe -pdf -interaction=nonstopmode -synctex=1 -outdir=build main.tex",
+      "options": {
+        "cwd": "${workspaceFolder}/latex/presentation",
+        "env": { "Path": "D:/MiKTeX/miktex/bin/x64;D:/Strawberry/perl/bin;${env:Path}" }
+      },
       "group": "build",
       "presentation": { "reveal": "always", "panel": "dedicated" },
       "problemMatcher": []

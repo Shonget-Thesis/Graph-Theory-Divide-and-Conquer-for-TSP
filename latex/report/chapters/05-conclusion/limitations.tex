@@ -1,25 +1,39 @@
 \subsection{Limitations and Possible Improvements}\label{sec:limitations}
 \paragraph{Limitations of the solution.}
 \begin{itemize}
-  \item The route is approximate (\DCGap\% above optimal) and depends on the random seed.
+      \item The route is approximate (1.54\% above optimal), and it depends on the
+            random seed: the 100-seed results in Table~\ref{tab:experiments} range from
+            13.61 to 14.26 km.
   \item Distance is the only cost. Traffic, travel time, opening hours and the time spent at each stop
         are ignored, although they matter for a real one-day tour.
-  \item Weights are made symmetric by averaging, so one-way streets are only approximated.
-  \item Road distances come from OpenStreetMap routing; Google Maps may give slightly different values.
+  \item Weights are made symmetric by averaging, so one-way streets are only approximated (this route is
+        13.54 km on the raw one-way values).
+  \item Road distances come from OpenStreetMap routing. A Google Maps check of
+        the final route gave 14.40 km against 13.82 km (+4.2\%), with individual
+        legs differing by up to 39\% (Table~\ref{tab:gmaps}). The optimality
+        statement of Section~5.2 holds for the OSRM matrix only; we did not
+        recompute the optimum with Google distances.
 \end{itemize}
 
 \paragraph{Improvements.}
 \begin{itemize}
-  \item \textbf{Local search after merging.} Applying 2-opt or Or-opt moves to the final tour removes
-        crossings and long ``seam'' edges such as V8--V0, and usually closes most of the remaining
-        gap~\cite{applegate2006tsp}.
-  \item \textbf{Multiple restarts.} Run several seeds and keep the shortest tour. Each run takes well
-        under a millisecond here, and the best of \RunCount{} runs was \BridgeBest{}~km.
-  \item \textbf{Merge rule.} We also tested the best-splice rule, which may break any edge of either
-        sub-tour rather than only edges next to the shortest bridge. On this instance it reached the
-        optimum more often (\BestRuleOptHits{} vs.\ \BridgeOptHits{} runs) but its mean was
-        \BestRuleMean{}~km against \BridgeMean{}~km (Table~\ref{tab:experiments}). A cheaper merge at
-        each step does not guarantee a shorter final tour, because every merge is still a local,
+  \item \textbf{Local search after merging.} Applying 2-opt or Or-opt moves to
+        the final tour removes locally poor orderings and usually closes most of
+        the remaining gap~\cite{applegate2006tsp}. On our route, a single 2-opt
+        move that reverses the segment $V_4 \to V_5$ replaces the edges
+        $V_3$--$V_4$ (1.31 km) and $V_5$--$V_6$ (0.74 km) by $V_3$--$V_5$
+        (0.97 km) and $V_4$--$V_6$ (0.87 km). This saves $2.05 - 1.84 = 0.21$
+        km and gives exactly the optimal length of 13.61 km.
+  \item \textbf{Multiple restarts.} Run several seeds and keep the shortest tour. Each run takes about
+        0.3~ms here, and the best of \RunCount{} runs was \BridgeBest{}~km. This equals the optimum
+        only because the separate Held--Karp computation identifies it; restarts alone do not prove
+        optimality.
+  \item \textbf{Merge rule.} We also tested the best-splice rule, which may
+        break any edge of either sub-tour rather than only the edges next to the
+        shortest bridge. On this instance it reached the optimum more often (17 vs.\
+        6 runs), but its mean length was 13.91 km against 13.88 km
+        (Table~\ref{tab:experiments}). A cheaper merge at each step does not
+        guarantee a shorter final tour, because every merge is still a local,
         irreversible decision.
   \item \textbf{Richer weights.} Use travel time with traffic from Google Maps, or a directed (asymmetric)
         matrix, if the objective changes from distance to time.

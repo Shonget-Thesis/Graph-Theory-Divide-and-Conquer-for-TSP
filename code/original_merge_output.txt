@@ -1,0 +1,9 @@
+Captured run of the paper-style merge expression described in Section 2.2.
+Input tour1: [0, 1, 2, 3]
+Input tour2: [4, 5, 6]
+Shortest bridge: (3, 5) 0.97 km
+Paper merge: tour1[:-1] + [a, b] + tour2
+Returned sequence: [0, 1, 2, 3, 5, 4, 5, 6]
+Returned length: 8
+Repeated vertices: [5]
+Closed at start: False

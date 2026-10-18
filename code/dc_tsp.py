@@ -1,5 +1,8 @@
 """Divide and Conquer heuristic for the Traveling Salesperson Problem.
 
+This implementation is adapted from Appendix 4.8 of Luna-Garcia et al. (2024),
+with the merge correction described below.
+
 Follows Algorithm 2.8 of Luna-Garcia, Candano and Caga-anan (2024),
 "Performance Analysis of Classical Algorithms for the Traveling Salesman
 Problem", The Mindanawan Journal of Mathematics 6(2), 79-111:

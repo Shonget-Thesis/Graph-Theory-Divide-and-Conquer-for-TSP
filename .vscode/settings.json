@@ -8,7 +8,7 @@
   "latex-workshop.latex.tools": [
     {
       "name": "latexmk",
-      "command": "latexmk",
+      "command": "D:/MiKTeX/miktex/bin/x64/latexmk.exe",
       "args": [
         "-synctex=1",
         "-interaction=nonstopmode",

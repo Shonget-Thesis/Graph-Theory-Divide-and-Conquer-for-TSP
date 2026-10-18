@@ -17,10 +17,11 @@ Leaves show the base-case tours and their lengths in km.}\label{fig:tree}
 Panel~(a) shows the median cuts, numbered by recursion level: the level-1 cut is the vertical line that
 splits the ten vertices into a western and an eastern half, and the level-2 and level-3 cuts split those
 halves again. Panel~(b) shows the base cases: pairs joined by an edge, and single vertices (V1, V4).
-Panels~(c)--(e) then undo the cuts from the deepest level up. At each level the sub-tours on the two
+Panel~(c)--(e) then undo the cuts from the deepest level up. At each level the sub-tours on the two
 sides of a cut are merged by deleting one edge from each (dashed red) and adding the shortest bridge
 and a closing edge (gold). After the level-1 merge a single Hamiltonian cycle remains, which is the
-final tour.
+final tour. The edge $V_8$--$V_0$ passes visually near $V_2$ in the map, but it is one direct graph
+edge; passing near another marker does not visit that vertex or add an extra stop.
 
 \begin{figure}[H]
 \centering
