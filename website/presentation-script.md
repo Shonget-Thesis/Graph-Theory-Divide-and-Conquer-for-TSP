@@ -215,7 +215,7 @@ At each handoff, the next speaker should begin immediately after the previous sp
 
 “The method is fast, geographically intuitive, and always produced a valid tour in our tests, but it is a heuristic. Its greedy merge decisions can lock in a locally inferior ordering. On our instance it produced 13.82 kilometres against the exact 13.61-kilometre optimum, while a simple 2-opt improvement closed the gap.
 
-“Thank you for listening. We are ready for questions.”
+“Thank you for listening.”
 
 ## Timing Summary
 
