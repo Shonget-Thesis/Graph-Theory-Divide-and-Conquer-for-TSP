@@ -342,6 +342,7 @@
       if (cur === stages.length - 1) self.stop();
     };
     self.cur = function () { return cur; };
+    self.count = function () { return stages.length; };
     self.play = function () {
       if (cur === stages.length - 1) self.show(0);
       act("play").textContent = "❚❚ Pause";
@@ -395,24 +396,27 @@
     DC.player.setSeed(RUN.presented.seed, false);
     $("[data-player='graph'] [data-a='sync']").addEventListener("click", function () {
       road.stop(); road.show(graph.cur());
-      document.getElementById("implementation-player").scrollIntoView({ behavior: DC.reduced ? "auto" : "smooth" });
+      DC.go("#/implementation/player");
     });
-    document.addEventListener("keydown", function (e) {
-      if (DC.page !== "implementation" || $("#palette").classList.contains("is-open")) return;
-      if (/INPUT|SELECT|TEXTAREA/.test(e.target.tagName || "")) return;
-      // drive whichever player is closest to the middle of the screen
-      var best = null, bd = 1e9;
-      players.forEach(function (p) {
-        var r = p.root.getBoundingClientRect();
-        if (r.bottom < 80 || r.top > innerHeight - 80) return;
-        var d = Math.abs((r.top + r.bottom) / 2 - innerHeight / 2);
-        if (d < bd) { bd = d; best = p; }
-      });
-      if (!best) return;
-      if (e.key === "ArrowRight") { e.preventDefault(); best.step(1); }
-      else if (e.key === "ArrowLeft") { e.preventDefault(); best.step(-1); }
-      else if (e.key === " " && !/BUTTON|A/.test(e.target.tagName)) { e.preventDefault(); best.toggle(); }
-    });
+  });
+  var playerIn = function (slide) {
+    for (var k = 0; k < players.length; k++) if (slide && slide.contains(players[k].root)) return players[k];
+    return null;
+  };
+  // PowerPoint-style builds: on a player slide, → / ← step through the algorithm first,
+  // and only move to the next / previous slide once the last / first step is reached
+  DC.build = function (slide, dir) {
+    var pl = playerIn(slide);
+    if (!pl) return false;
+    if (dir > 0 && pl.cur() < pl.count() - 1) { pl.step(1); return true; }
+    if (dir < 0 && pl.cur() > 0) { pl.step(-1); return true; }
+    return false;
+  };
+  // arriving backwards shows the finished state, like going back in a slide show
+  DC.onEnter(function (slide, dir) {
+    players.forEach(function (p) { if (p.root.closest(".slide") !== slide) p.stop(); });
+    var pl = playerIn(slide);
+    if (pl && dir < 0) { pl.stop(); pl.show(pl.count() - 1); }
   });
   DC.onShow("implementation", function () { players.forEach(function (p) { p.refresh(); }); });
 })();
