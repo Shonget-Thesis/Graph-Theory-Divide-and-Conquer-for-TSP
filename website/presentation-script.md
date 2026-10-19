@@ -10,9 +10,20 @@
 
 Open `website/index.html` in a browser and use full screen with `F`. Advance with `Right Arrow`, `PageDown`, or `Space`. On the two implementation player slides, advance through the algorithm steps before moving to the next slide. Use `Shift + Right Arrow` when a slide should be skipped without replaying its animation.
 
-The timings below total approximately 15 minutes. The words in quotation marks are the suggested narration. Text in brackets describes the screen action and is not spoken.
+The timings below total approximately 15 minutes. Each member has one equal block of 3 minutes 45 seconds. The words in quotation marks are the suggested narration. Text in brackets describes the screen action and is not spoken.
 
-## 00. Title and Outline: 0:00–0:45
+## Speaker Assignment
+
+| Speaker | Slides and time | Total |
+|---|---|---:|
+| Heart Chiong | Title, outline, problem, objective, and algorithm introduction | 0:00–3:45 |
+| Mark Vincent Limpahan | Algorithm completion, graph model, data, and Google cross-check | 3:45–7:30 |
+| Roxanne Locsin | Applying the algorithm, implementation, players, code, and route result | 7:30–11:15 |
+| Rhenel Jhon Sajol | Interpretation, optimality, experiments, limitations, and closing | 11:15–15:00 |
+
+At each handoff, the next speaker should begin immediately after the previous speaker's transition sentence.
+
+## 00. Heart Chiong: Title and Outline, 0:00–0:45
 
 ### Title slide, 0:00–0:30
 
@@ -28,7 +39,7 @@ The timings below total approximately 15 minutes. The words in quotation marks a
 
 “This presentation has five parts: the problem, the Divide and Conquer algorithm, the graph model and data, the Python implementation and results, and the conclusion. We also provide the references used by the project.”
 
-## 01. Problem and Objective: 0:45–2:30
+## 01. Heart Chiong: Problem and Objective, 0:45–2:30
 
 ### Divider, 0:45–0:55
 
@@ -60,15 +71,15 @@ The timings below total approximately 15 minutes. The words in quotation marks a
 
 “The road data come from the OSRM Table service using its driving profile and OpenStreetMap road data. OSRM reports the route distance selected for each ordered pair. Because one-way streets make the two directions different, we average the two directed values to create the symmetric matrix used by the solver. Traffic, waiting time, opening hours, and time spent at each stop are outside the model.”
 
-## 02. Algorithm: 2:30–5:15
+## 02. Heart Chiong to Mark Vincent Limpahan: Algorithm, 2:30–5:25
 
-### Divider, 2:30–2:40
+### Divider, 2:30–2:40 (Heart)
 
 [Show the Algorithm divider.] 
 
 “The algorithm follows Algorithm 2.8 from Luna-Garcia, Candano, and Caga-anan, with a correction to the merge step.”
 
-### Procedure, 2:40–3:35
+### Procedure, 2:40–3:35 (Heart)
 
 [Show the procedure slide. Advance through the six steps.] 
 
@@ -84,13 +95,15 @@ The timings below total approximately 15 minutes. The words in quotation marks a
 
 “Step 6 combines the cycles while ensuring that every city appears exactly once.”
 
-### Complexity and pseudocode, 3:35–4:05
+“That explains the recursive procedure. Mark will now discuss the complexity, the merge correction, and how the graph data support the implementation.”
+
+### Complexity and pseudocode, 3:35–4:05 (Mark)
 
 [Show the complexity slide.] 
 
 “The bridge search examines all cross pairs, which is O(n²). The implementation also loops over edge pairs from the two cycles. Most pairs may be skipped, but the loop is still O(n²) in the worst case. The recurrence is T(n) equals 2T(n/2) plus O(n²), giving an overall O(n²) running time.”
 
-### Merge bug and correction, 4:05–5:15
+### Merge bug and correction, 4:05–5:25 (Mark)
 
 [Show the merge slide. Point to the preserved output.] 
 
@@ -98,15 +111,15 @@ The timings below total approximately 15 minutes. The words in quotation marks a
 
 “Our correction removes one edge from each cycle and adds two cross edges: the shortest bridge and a closing edge. The result is one cycle containing every city exactly once. We also implemented a best-splice variant that tries all edge-pair combinations instead of requiring the shortest bridge.”
 
-## 03. Graph Model and Data: 5:15–8:00
+## 03. Mark Vincent Limpahan: Graph Model and Data, 5:25–7:30
 
-### Divider and vertices, 5:15–5:45
+### Divider and vertices, 5:25–5:55
 
 [Show the graph-model divider, then the vertices slide. Hover a vertex if useful.] 
 
 “We model the problem as the complete graph K10. Ten vertices give 45 undirected edges. Each location has a label, name, area, latitude, and longitude. Coordinates are used only for the divide step; costs come from the road-distance data.”
 
-### Edges and matrix, 5:45–6:35
+### Edges and matrix, 5:55–6:45
 
 [Show the edges slide and hover a matrix cell.] 
 
@@ -114,7 +127,7 @@ The timings below total approximately 15 minutes. The words in quotation marks a
 
 “The raw matrix is directed. For example, V0 to V1 and V1 to V0 have different OSRM distances. We define the undirected weight as one half of the two directed values, rounded to two decimal places. Hovering a matrix cell shows both directed values and their averaged weight.”
 
-### Data sources and Google cross-check, 6:35–7:20
+### Data sources and Google cross-check, 6:45–7:20
 
 [Show the data-source slide, then the Google cross-check slide.] 
 
@@ -122,21 +135,27 @@ The timings below total approximately 15 minutes. The words in quotation marks a
 
 “The matrix total is 13.82 kilometres and the Google comparison is 14.40 kilometres, a difference of about 4.2 percent. Individual legs differ by more because Google and OSRM use different map data, turn restrictions, and route choices. These Google values are a cross-check only; we do not replace the OSRM matrix or recompute the optimum from Google values.”
 
-### Applying the algorithm, 7:20–8:00
+### Handoff to implementation, 7:20–7:30
+
+[Leave the Google cross-check visible, then move to the applying-the-algorithm slide.]
+
+“The data and the cross-check establish the input used by the program. Roxanne will now show how the algorithm runs on this graph and how we verify the resulting tour.”
+
+## 04. Roxanne Locsin: Implementation and Results, 7:30–11:15
+
+### Applying the algorithm, 7:30–8:10
 
 [Show the divide tree and merge trace. Point to M1, M2, and the final merge.] 
 
 “For seed 1, the algorithm repeatedly cuts the locations by longitude or latitude. The trace records each base case and merge. At each merge we can see the bridge, removed edges, added edges, change in length, and resulting cycle. This makes the numerical result reproducible and lets us explain exactly where the final ordering comes from.”
 
-## 04. Implementation and Results: 8:00–12:10
-
-### Worked merge, 8:00–8:35
+### Worked merge, 8:10–8:45
 
 [Show the worked calculation.] 
 
 “At the final merge, the program checks all cross pairs between the two halves to find the shortest bridge. It then selects the cheapest valid reconnection that keeps the paper-faithful bridge. The merge identity is L(T) equals L(T1) plus L(T2) plus delta, and the resulting cycle still visits every vertex once.”
 
-### Step player: simple graph, 8:35–9:30
+### Step player: simple graph, 8:45–9:30
 
 [Open the simple-graph player. Advance through input, shuffle, split, base, splice, merge, final, and verify.] 
 
@@ -156,15 +175,15 @@ The timings below total approximately 15 minutes. The words in quotation marks a
 
 “The recorded console output shows the input, every divide and merge, the route, verification checks, Held–Karp comparison, and the 100-seed experiment.”
 
-### Resulting route, 10:55–11:25
+### Resulting route, 10:55–11:15
 
 [Show the route map and leg table.] 
 
 “With seed 1 and the paper-faithful merge, the route is V0 to V1 to V7 to V9 to V2 to V3 to V4 to V5 to V6 to V8 and back to V0. Its symmetric-matrix length is 13.82 kilometres. Summing the raw one-way OSRM values in this driven direction gives 13.54 kilometres, showing the effect of averaging the two directions.”
 
-## 05. Conclusion: 12:10–14:30
+## 05. Rhenel Jhon Sajol: Conclusion, 11:15–15:00
 
-### Interpretation and M2, 12:10–13:00
+### Interpretation and M2, 11:15–12:25
 
 [Show the route interpretation slide.] 
 
@@ -172,7 +191,7 @@ The timings below total approximately 15 minutes. The words in quotation marks a
 
 “The important difference from the optimum is the order inside that cluster. Merge M1 creates the triangle V3, V4, V5, whose length does not depend on the order. Merge M2 decides the order. Its shortest bridge is V6–V5, so the paper-faithful rule must include that edge. This produces the path V3 to V4 to V5. The optimal order would use V6–V4 instead. That alternative is not allowed by the shortest-bridge rule, but the best-splice variant can choose it. This is the local and irreversible decision that creates the 0.21-kilometre gap.”
 
-### Optimality and 2-opt, 13:00–13:45
+### Optimality and 2-opt, 12:25–13:20
 
 [Show the comparison slide. Toggle the optimal tour and the 2-opt fix.] 
 
@@ -180,7 +199,7 @@ The timings below total approximately 15 minutes. The words in quotation marks a
 
 “A single 2-opt move reverses the local V4-to-V5 ordering. It replaces V3–V4 and V5–V6 with V3–V5 and V4–V6, saving 0.21 kilometres and reaching exactly 13.61 kilometres. This is an improvement step, not part of the original Divide and Conquer algorithm.”
 
-### Repeated runs and limitations, 13:45–14:30
+### Repeated runs and limitations, 13:20–14:15
 
 [Show the seed chart and limitations slide.] 
 
@@ -188,7 +207,7 @@ The timings below total approximately 15 minutes. The words in quotation marks a
 
 “Timing is about 0.3 milliseconds per run on this machine, but it varies by machine and run. Restarts alone do not prove optimality; Held–Karp is what tells us that the best route equals the optimum.”
 
-## Closing: 14:30–15:00
+## Closing, 14:15–15:00
 
 [Show the final conclusion slide. Leave the route and totals visible.] 
 
@@ -202,11 +221,8 @@ The timings below total approximately 15 minutes. The words in quotation marks a
 
 | Segment | Time |
 |---|---:|
-| Title and outline | 0:45 |
-| Problem and objective | 1:45 |
-| Algorithm | 2:45 |
-| Graph model and data | 2:45 |
-| Implementation and results | 4:10 |
-| Conclusion | 2:20 |
-| Closing | 0:30 |
+| Heart Chiong | 3:45 |
+| Mark Vincent Limpahan | 3:45 |
+| Roxanne Locsin | 3:45 |
+| Rhenel Jhon Sajol | 3:45 |
 | **Total** | **15:00** |
