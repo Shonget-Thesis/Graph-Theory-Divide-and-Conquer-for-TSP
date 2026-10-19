@@ -55,12 +55,12 @@ python test_dc_tsp.py
 
 | File | What it does |
 | --- | --- |
-| `index.html` | All tabs and their text (matches the report and slides) |
-| `assets/style.css` | Design tokens (light/dark), layout, map and player styles |
-| `assets/core.js` | Number bindings (`data-k`, `data-w`), hash router with View Transitions, theme, preloader, ⌘/Ctrl K command menu, Alt G grid overlay |
+| `index.html` | The 33 slides and their text (matches the report and the LaTeX slides) |
+| `assets/style.css` | Design tokens (light/dark), components, map and player styles, and the deck canvas |
+| `assets/core.js` | Number bindings (`data-k`, `data-w`), the slide deck (16:9 scaling, horizontal transitions, keyboard/clicker/swipe navigation, full screen), theme, preloader, ⌘/Ctrl K command menu, Alt G grid overlay |
 | `assets/maps.js` | Leaflet helpers: road-snapped edges, arrows, weight tags, vertex pins |
 | `assets/pages.js` | Tables, the K₁₀ probe, matrix-hover roads, divide tree, code viewer, terminal replay, route and comparison maps, seed chart |
-| `assets/player.js` | The 04.1 step player |
+| `assets/player.js` | The two step players (04.1 simple graph, 04.2 roads): one engine, two renderers |
 
 `Alt G` toggles the 12-column grid overlay. In the command menu, type a seed number to replay that seed in both step players.
 
