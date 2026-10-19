@@ -224,12 +224,10 @@
     $("#components").addEventListener("click", function (e) { var tr = e.target.closest("tr.is-clickable"); if (tr) showCode(tr.dataset.fn); });
     showCode("merge");
 
-    // terminal: play once when it scrolls into view
+    // terminal: replays the first time its slide is shown
     termRender(0);
-    var started = false, term = $("#term");
-    if ("IntersectionObserver" in window) {
-      new IntersectionObserver(function (en, obs) { if (en[0].isIntersecting && !started) { started = true; termPlay(); obs.disconnect(); } }, { threshold: 0.3 }).observe(term);
-    } else termRender();
+    var started = false;
+    DC.onEnter(function (slide) { if (slide.id === "implementation-demo" && !started) { started = true; setTimeout(termPlay, 500); } });
     $("#term-replay").addEventListener("click", termPlay);
     $("#term-skip").addEventListener("click", function () { clearInterval(termTimer); termRender(); });
 
@@ -372,8 +370,13 @@
   DC.onPage("algorithm", function () {
     var d = $("#mdiag"), b = $("#mdiag-btn");
     b.addEventListener("click", function () { var on = d.classList.toggle("is-merged"); b.textContent = on ? "↺ Reset" : "Merge →"; });
-    if ("IntersectionObserver" in window) new IntersectionObserver(function (en, o) {
-      if (en[0].isIntersecting) { setTimeout(function () { d.classList.add("is-merged"); b.textContent = "↺ Reset"; }, 600); o.disconnect(); }
-    }, { threshold: 0.6 }).observe(d);
+    // each time the slide is entered: show the two cycles, then animate the merge
+    var timer;
+    DC.onEnter(function (slide) {
+      clearTimeout(timer);
+      if (slide.id !== "algorithm-merge") return;
+      d.classList.remove("is-merged"); b.textContent = "Merge →";
+      timer = setTimeout(function () { d.classList.add("is-merged"); b.textContent = "↺ Reset"; }, 1400);
+    });
   });
 })();

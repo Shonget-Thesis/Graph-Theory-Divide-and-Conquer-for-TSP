@@ -114,85 +114,89 @@
     return L.map(function (l, i) { return [ox + (xs[i] - minx) * s, 100 - (oy + (ys[i] - miny) * s)]; });
   };
 
-  /* ---------- router: #/page or #/page/section ---------- */
-  var PAGES = ["home", "problem", "algorithm", "graph", "implementation", "conclusion", "references"];
-  var inits = {}, shows = {}, done = {};
-  DC.onPage = function (page, fn) { (inits[page] = inits[page] || []).push(fn); };
-  DC.onShow = function (page, fn) { (shows[page] = shows[page] || []).push(fn); };
+  /* ---------- deck: 16:9 slides, horizontal transitions, PowerPoint-style navigation ----------
+     Hash: #/ (title), #/<tab> (first slide of a tab), #/<tab>/<name> (slide id "<tab>-<name>").
+     DC.onPage(tab, fn) runs once, the first time any slide of that tab is shown;
+     DC.onShow(tab, fn) runs every time one is shown; DC.onEnter(fn(slide, dir)) runs on every slide change.
+     DC.build(slide, dir) may consume a forward/back press (the step players use it for click-by-click builds). */
+  var inits = {}, shows = {}, enters = [], done = {};
+  DC.onPage = function (tab, fn) { (inits[tab] = inits[tab] || []).push(fn); };
+  DC.onShow = function (tab, fn) { (shows[tab] = shows[tab] || []).push(fn); };
+  DC.onEnter = function (fn) { enters.push(fn); };
   DC.page = null;
+  var slides = [], cur = -1, EASE = "cubic-bezier(.76, 0, .24, 1)";
 
-  function parse() {
-    var h = (location.hash || "").replace(/^#\/?/, "").split("/");
-    var page = PAGES.indexOf(h[0]) >= 0 ? h[0] : "home";
-    return { page: page, section: h[1] ? page + "-" + h[1] : null };
+  function fit() {
+    var s = Math.min(innerWidth / 1920, innerHeight / 1080);
+    $("#stage").style.setProperty("--scale", s.toFixed(4));
   }
-  function swap(r) {
-    $$(".page").forEach(function (s) { s.classList.toggle("is-active", s.dataset.page === r.page); });
-    $$("[data-nav]").forEach(function (a) {
-      if (a.dataset.nav === r.page) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current");
-    });
-    var sec = $('.page[data-page="' + r.page + '"]');
-    document.title = (r.page === "home" ? "" : sec.dataset.title.replace(/^\d+ · /, "") + " · ") + "Divide & Conquer TSP";
-    if (!done[r.page]) { done[r.page] = true; (inits[r.page] || []).forEach(function (f) { f(); }); }
-    (shows[r.page] || []).forEach(function (f) { f(); });
-    DC.page = r.page;
+  function indexFromHash() {
+    var parts = (location.hash || "").replace(/^#\/?/, "").split("/").filter(Boolean);
+    if (!parts.length) return 0;
+    var id = parts.join("-"), i = slides.map(function (s) { return s.id; }).indexOf(id);
+    if (i < 0) for (var k = 0; k < slides.length; k++) if (slides[k].dataset.tab === parts[0]) { i = k; break; }
+    return i < 0 ? 0 : i;
   }
-  function route() {
-    var r = parse(), changed = r.page !== DC.page;
-    var go = function () {
-      if (changed) swap(r);
-      var target = r.section && document.getElementById(r.section);
-      if (target) target.scrollIntoView({ behavior: changed || DC.reduced ? "auto" : "smooth" });
-      else if (changed) window.scrollTo(0, 0);
-      $("#sheet").classList.remove("is-open");
-      $("#menu-toggle").setAttribute("aria-expanded", "false");
-      onScroll();
-    };
-    if (changed && DC.page && document.startViewTransition && !DC.reduced) document.startViewTransition(go);
-    else go();
-  }
-  DC.go = function (hash) { if (location.hash === hash) route(); else location.hash = hash; };
+  function hashFor(i) { return i === 0 ? "#/" : "#/" + slides[i].id.replace("-", "/"); }
 
-  /* ---------- scroll progress + current section tag ---------- */
-  var ticking = false;
-  function onScroll() {
-    if (ticking) return; ticking = true;
-    requestAnimationFrame(function () {
-      ticking = false;
-      var max = document.documentElement.scrollHeight - innerHeight;
-      $("#progress").style.width = (max > 0 ? (scrollY / max) * 100 : 0) + "%";
-      var page = $(".page.is-active"); if (!page) return;
-      var tag = page.dataset.title, heads = $$(".section-head .note--ink", page);
-      heads.forEach(function (h) { if (h.getBoundingClientRect().top < innerHeight * 0.35) tag = h.textContent.replace(/[\[\]]/g, ""); });
-      $("#progress-tag").textContent = tag;
-    });
+  function show(i, dir) {
+    if (i === cur || i < 0 || i >= slides.length) return;
+    var prev = slides[cur], next = slides[i], tab = next.dataset.tab;
+    dir = dir || (cur < 0 ? 0 : i > cur ? 1 : -1);
+    if (!done[tab]) { done[tab] = true; (inits[tab] || []).forEach(function (f) { f(); }); }
+    next.classList.add("is-active");
+    if (prev) {
+      prev.classList.remove("is-active");
+      if (dir && !DC.reduced && next.animate) {
+        prev.classList.add("is-leaving");
+        var opts = { duration: 700, easing: EASE };
+        next.animate([{ transform: "translateX(" + dir * 100 + "%)" }, { transform: "none" }], opts);
+        prev.animate([{ transform: "none" }, { transform: "translateX(" + -dir * 100 + "%)" }], opts).onfinish = function () { prev.classList.remove("is-leaving"); };
+      }
+    }
+    cur = i; DC.page = tab; DC.slide = next;
+    $$("[data-nav]").forEach(function (a) { if (a.dataset.nav === tab) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current"); });
+    $("#progress").style.width = ((i + 1) / slides.length * 100) + "%";
+    $("#deck-label").textContent = next.dataset.label;
+    $("#deck-count").textContent = (i + 1) + " / " + slides.length;
+    $$("#deck-dots i").forEach(function (d, k) { d.classList.toggle("is-cur", k === i); d.classList.toggle("is-tab", slides[k].dataset.tab === tab); });
+    $$("[data-deck='prev']").forEach(function (b) { b.disabled = i === 0; });
+    $$("[data-deck='next']").forEach(function (b) { b.disabled = i === slides.length - 1; });
+    document.title = (i === 0 ? "" : next.dataset.label.replace(/^[\d.]+ · /, "") + " · ") + "Divide & Conquer TSP";
+    $$("[data-count]", next).forEach(countUp);
+    (shows[tab] || []).forEach(function (f) { f(); });
+    enters.forEach(function (f) { f(next, dir); });
+    if (location.hash !== hashFor(i) && !(i === 0 && !location.hash)) history.replaceState(null, "", hashFor(i));
   }
-  addEventListener("scroll", onScroll, { passive: true });
-
-  /* ---------- reveal + count-up ---------- */
-  var io = "IntersectionObserver" in window ? new IntersectionObserver(function (entries) {
-    entries.forEach(function (en) {
-      if (!en.isIntersecting) return;
-      en.target.classList.add("is-in");
-      $$("[data-count]", en.target).forEach(countUp);
-      io.unobserve(en.target);
-    });
-  }, { rootMargin: "0px 0px -8% 0px", threshold: 0.05 }) : null;
-  DC.reveal = function (rootEl) {
-    $$(".reveal", rootEl).forEach(function (e) { if (io) io.observe(e); else { e.classList.add("is-in"); $$("[data-count]", e).forEach(countUp); } });
+  function go(i, dir) { show(Math.max(0, Math.min(slides.length - 1, i)), dir); }
+  DC.deck = {
+    next: function (skipBuilds) { if (!skipBuilds && DC.build && DC.build(slides[cur], 1)) return; go(cur + 1, 1); },
+    prev: function (skipBuilds) { if (!skipBuilds && DC.build && DC.build(slides[cur], -1)) return; go(cur - 1, -1); },
+    index: function () { return cur; }
   };
+  DC.go = function (hash) {
+    if (location.hash === hash) show(indexFromHash());
+    else location.hash = hash;
+  };
+
   function countUp(e) {
-    if (e.dataset.counted) return; e.dataset.counted = "1";
     var to = DC.num[e.dataset.count], d = +(e.dataset.d || 0), suffix = e.dataset.suffix || "";
     var small = e.querySelector("small"), smallHtml = small ? small.outerHTML : "";
     var put = function (v) { e.innerHTML = fmt(v, d) + suffix + smallHtml; };
     if (DC.reduced) return put(to);
-    var t0 = performance.now(), dur = 1100;
+    var t0 = performance.now() + 350, dur = 1100;
+    put(0);
     (function step(t) {
-      var k = Math.min(1, (t - t0) / dur), ease = 1 - Math.pow(1 - k, 3);
+      var k = Math.max(0, Math.min(1, (t - t0) / dur)), ease = 1 - Math.pow(1 - k, 3);
       put(k < 1 ? to * ease : to);
       if (k < 1) requestAnimationFrame(step);
-    })(t0);
+    })(performance.now());
+  }
+
+  function toggleFullscreen() {
+    var d = document;
+    if (d.fullscreenElement) d.exitFullscreen && d.exitFullscreen();
+    else if (d.documentElement.requestFullscreen) d.documentElement.requestFullscreen().catch(function () {});
   }
 
   /* ---------- preloader ---------- */
@@ -220,20 +224,15 @@
   /* ---------- command palette ---------- */
   var cmds = [], sel = 0, shown = [];
   function buildCommands() {
-    cmds = [];
-    $$(".page").forEach(function (pg) {
-      var page = pg.dataset.page;
-      cmds.push({ label: pg.dataset.title.replace(/^\d+ · /, ""), hint: pg.dataset.title.split(" · ")[0], run: function () { DC.go(page === "home" ? "#/" : "#/" + page); } });
-      $$(".section[id]", pg).forEach(function (s) {
-        var head = $(".section-head .note--ink", s); if (!head) return;
-        var txt = head.textContent.replace(/^\[([\d.]+)\]\s*/, ""), num = (head.textContent.match(/\[([\d.]+)\]/) || [])[1];
-        cmds.push({ label: txt, hint: num, run: function () { DC.go("#/" + page + "/" + s.id.slice(page.length + 1)); } });
-      });
+    cmds = slides.map(function (s, i) {
+      var parts = s.dataset.label.split(" · ");
+      return { label: parts.slice(1).join(" · "), hint: parts[0] + " · " + (i + 1), run: function () { go(i); } };
     });
     p.trace.filter(function (e) { return e.step === "merge"; }).forEach(function (m) {
-      cmds.push({ label: "Player: jump to merge " + m.name, hint: "04", run: function () { DC.player && DC.player.jump(m.name); } });
+      cmds.push({ label: "Step players: jump to merge " + m.name, hint: "04", run: function () { DC.go("#/implementation/graph"); setTimeout(function () { DC.player && DC.player.jump(m.name); }, 50); } });
     });
     cmds.push({ label: "Toggle dark / light theme", hint: "theme", run: DC.toggleTheme });
+    cmds.push({ label: "Full screen", hint: "F", run: toggleFullscreen });
     cmds.push({ label: "Toggle 12-column grid", hint: "Alt G", run: toggleGrid });
   }
   function renderPalette(q) {
@@ -242,7 +241,7 @@
     var n = /^\d{1,3}$/.test(q) ? +q : (/^seed\s*(\d{1,3})$/.exec(q) || [])[1];
     if (n != null && +n < RUN.seeds.length) {
       var s = RUN.seeds[+n];
-      shown.unshift({ label: "Player: replay seed " + n + " (" + fmt(s.total) + " km" + (s.optimal ? ", optimal" : "") + ")", hint: "04", run: function () { DC.player && DC.player.setSeed(+n, true); } });
+      shown.unshift({ label: "Step players: replay seed " + n + " (" + fmt(s.total) + " km" + (s.optimal ? ", optimal" : "") + ")", hint: "04", run: function () { DC.player && DC.player.setSeed(+n, true); } });
     }
     sel = Math.min(sel, Math.max(0, shown.length - 1));
     $("#palette-list").innerHTML = shown.map(function (c, i) {
@@ -268,18 +267,27 @@
     $("#kbd-mod2").textContent = DC.isMac ? "⌘" : "Ctrl";
     bind(document);
     $("#merge-bug-output").textContent = RUN.source["original_merge_output.txt"];
+    slides = $$(".slide");
+    slides.forEach(function (s) { $$(".reveal", s).forEach(function (e, k) { e.style.setProperty("--i", k); }); });
+    $("#deck-dots").innerHTML = slides.map(function () { return "<i></i>"; }).join("");
+    fit(); addEventListener("resize", fit);
     preloader();
+
     $("#theme-toggle").addEventListener("click", DC.toggleTheme);
     $("#palette-open").addEventListener("click", openPalette);
-    $("#menu-toggle").addEventListener("click", function () {
-      var open = $("#sheet").classList.toggle("is-open");
-      this.setAttribute("aria-expanded", String(open));
+    $("#fullscreen").addEventListener("click", toggleFullscreen);
+    document.addEventListener("click", function (e) {
+      var b = e.target.closest("[data-deck]");
+      if (!b) return;
+      e.preventDefault();
+      if (b.dataset.deck === "next") DC.deck.next(true); else DC.deck.prev(true);
     });
     $("#palette").addEventListener("click", function (e) {
       var b = e.target.closest("button[data-i]");
       if (b) runSel(+b.dataset.i); else if (e.target === this) closePalette();
     });
     $("#palette-input").addEventListener("input", function () { sel = 0; renderPalette(this.value); });
+
     document.addEventListener("keydown", function (e) {
       var pal = $("#palette").classList.contains("is-open");
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") { e.preventDefault(); pal ? closePalette() : openPalette(); return; }
@@ -292,10 +300,33 @@
         } else if (e.key === "Enter") { e.preventDefault(); runSel(sel); }
         return;
       }
-      if (e.altKey && (e.code === "KeyG" || e.key.toLowerCase() === "g")) { e.preventDefault(); toggleGrid(); }
+      if (e.altKey && (e.code === "KeyG" || e.key.toLowerCase() === "g")) { e.preventDefault(); toggleGrid(); return; }
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      var tag = (e.target.tagName || "").toUpperCase();
+      if (/INPUT|SELECT|TEXTAREA/.test(tag)) return;
+      var onControl = /BUTTON|A/.test(tag);
+      switch (e.key) {
+        case "ArrowRight": case "PageDown": e.preventDefault(); DC.deck.next(e.shiftKey); break;
+        case "ArrowLeft": case "PageUp": e.preventDefault(); DC.deck.prev(e.shiftKey); break;
+        case " ": if (onControl) return; e.preventDefault(); e.shiftKey ? DC.deck.prev() : DC.deck.next(); break;
+        case "Home": e.preventDefault(); go(0, -1); break;
+        case "End": e.preventDefault(); go(slides.length - 1, 1); break;
+        case "f": case "F": toggleFullscreen(); break;
+      }
     });
-    addEventListener("hashchange", route);
-    DC.reveal(document);
-    route();
+
+    // swipe left/right on touch screens (not when the gesture starts on a map or a figure)
+    var sx = null, sy = 0;
+    $("#main").addEventListener("pointerdown", function (e) {
+      sx = e.target.closest(".map, .gstage, .probe, .term pre, .codebox pre, .matrix, .dots, select, button, a") ? null : e.clientX; sy = e.clientY;
+    });
+    $("#main").addEventListener("pointerup", function (e) {
+      if (sx == null || e.pointerType === "mouse") return;
+      var dx = e.clientX - sx, dy = e.clientY - sy; sx = null;
+      if (Math.abs(dx) > 70 && Math.abs(dx) > 2 * Math.abs(dy)) dx < 0 ? DC.deck.next(true) : DC.deck.prev(true);
+    });
+
+    addEventListener("hashchange", function () { show(indexFromHash()); });
+    show(indexFromHash(), 0);
   });
 })();

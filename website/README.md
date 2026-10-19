@@ -1,6 +1,21 @@
 # Website: Divide & Conquer for the TSP
 
-A static site that presents the project. Its tabs follow the presentation outline (01 Problem → 05 Conclusion, plus References). The **04 Implementation** tab is the final prototype: a step player that replays the recorded run of `code/dc_tsp.py` on the map. Every divide, base case and merge is drawn along the actual street route behind each edge weight.
+A static site that presents the project as a **16:9 slide deck**: 33 slides on a fixed 1920×1080 canvas, scaled to fit any screen (full screen with `F`). The tabs at the top follow the presentation outline (01 Problem → 05 Conclusion, plus References) and jump to each section. Slides slide in horizontally, and their contents build in one after another.
+
+**04 Implementation** is the final prototype. Two step players replay the recorded run of `code/dc_tsp.py`: first on the simple graph (04.1), then on the map (04.2), where every divide, base case and merge is drawn along the actual street route behind each edge weight.
+
+### Presenting
+
+| Key | Action |
+| --- | --- |
+| `→` `PageDown` `Space` | next. On the two player slides, this steps through the algorithm first, then moves on after the last step (like PowerPoint click animations) |
+| `←` `PageUp` | previous (going back into a player slide shows its last step) |
+| `Shift` + `→` / `←` | skip the step builds and change slide directly |
+| `Home` / `End` | first / last slide |
+| `F` | full screen |
+| `Ctrl/⌘ K` | jump to any slide, merge step or seed |
+
+The on-screen ‹ › buttons always change slide. A presentation clicker works, because it sends `PageDown` / `PageUp`. On touch screens, swipe left or right.
 
 ## View it
 
@@ -40,13 +55,13 @@ python test_dc_tsp.py
 
 | File | What it does |
 | --- | --- |
-| `index.html` | All tabs and their text (matches the report and slides) |
-| `assets/style.css` | Design tokens (light/dark), layout, map and player styles |
-| `assets/core.js` | Number bindings (`data-k`, `data-w`), hash router with View Transitions, theme, preloader, ⌘/Ctrl K command menu, Alt G grid overlay |
+| `index.html` | The 33 slides and their text (matches the report and the LaTeX slides) |
+| `assets/style.css` | Design tokens (light/dark), components, map and player styles, and the deck canvas |
+| `assets/core.js` | Number bindings (`data-k`, `data-w`), the slide deck (16:9 scaling, horizontal transitions, keyboard/clicker/swipe navigation, full screen), theme, preloader, ⌘/Ctrl K command menu, Alt G grid overlay |
 | `assets/maps.js` | Leaflet helpers: road-snapped edges, arrows, weight tags, vertex pins |
 | `assets/pages.js` | Tables, the K₁₀ probe, matrix-hover roads, divide tree, code viewer, terminal replay, route and comparison maps, seed chart |
-| `assets/player.js` | The 04.1 step player |
+| `assets/player.js` | The two step players (04.1 simple graph, 04.2 roads): one engine, two renderers |
 
-Keyboard: `Ctrl/⌘ K` opens the command menu (type a seed number to replay it), `Alt G` toggles the 12-column grid, and `←` / `→` / `Space` drive the step player.
+`Alt G` toggles the 12-column grid overlay. In the command menu, type a seed number to replay that seed in both step players.
 
 Design reference: [piergorelli.com](https://piergorelli.com/), a blueprint style with paper/ink colors, a single blue accent, Geist + Geist Mono, numbered sections and hairline rules.
